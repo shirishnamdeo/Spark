@@ -1,14 +1,10 @@
-Do Spark libraries get propagated to all data nodes?
+﻿Do Spark libraries get propagated to all data nodes?
 QUESTION:
 When installing and setup spark client on edge node, libraries don't seems to be propagated on data nodes. 
 Do Spark libraries get propagated to data nodes?.
 
 ANSWER:
 The spark libraries don’t need to exist on all the nodes. Spark is a client, so the library only need to be present in the host where the user submits the job from. When the spark job get launched, the required jars will be uploaded to the HDFS and shipped to the distributed cache for run-time requirement. 
-
-
-
-
 
 
 
