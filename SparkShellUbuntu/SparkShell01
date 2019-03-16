@@ -1,0 +1,103 @@
+VM -> Spark 2.4.0
+
+Inside spark-shell, both the context, org.apache.spark.SparkContext with sc and org.apache.spark.sql.SparkSession exists with spark variable exists.
+
+
+-- Reading from HDFS
+
+HDFS files can be accessed on -> hdfs dfs -ls hdfs://localhost:9000/
+
+sc.textFile('hdfs://localhost:9000/apps/tenant1/warehouse/hadoop_etc/hdfs-site.xml')  -> Single Quote doesn't works!!
+
+val data_rdd = sc.textFile("hdfs://localhost:9000/apps/tenant1/warehouse/hadoop_etc/hdfs-site.xml")
+org.apache.spark.rdd.RDD[String]
+
+
+scala> data_rdd.partitions.size
+res43: Int = 2
+-- Why 2 partitions are created, and why parallelize_data has 6 partitions?? ***
+
+
+data_rdd.count() -- 32
+data_rdd.first()
+data_rdd.last()  -- No such method 
+
+data_rdd.collect()  -- Return an Array with each line as one element of the array.
+					-- Spark returned all the elements of the rdd as an Array to the Driver program.
+					-- This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
+
+data_rdd.take(n)   -- Return an array with the first n elements of the dataset.
+
+
+
+val parallelize_data = sc.parallelize(1 to 10)
+
+parallelize_data
+org.apache.spark.rdd.RDD[Int]
+-- So both (data_rdd and parallelize_data) are of type same RDD class (just the type is different)
+
+scala> parallelize_data.partitions.size
+res44: Int = 6
+
+scala> parallelize_data.count()
+res34: Long = 10
+
+scala> parallelize_data.takeSample(true, 5)
+res35: Array[Int] = Array(2, 4, 4, 3, 2)
+
+scala> parallelize_data.takeSample(false, 5)
+res36: Array[Int] = Array(9, 10, 4, 8, 6)
+
+scala> parallelize_data.takeSample(false, 15)
+res37: Array[Int] = Array(3, 1, 5, 7, 8, 6, 4, 2, 10, 9)
+
+scala> parallelize_data.takeSample(true, 15)
+res38: Array[Int] = Array(6, 10, 8, 2, 10, 8, 10, 4, 2, 1, 8, 7, 9, 4, 9)
+
+
+
+
+scala> parallelize_data.takeOrdered(5)
+res39: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> data_rdd.takeOrdered(5)
+res40: Array[String] = Array("", "", "", "", "	<name>dfs.datanode.data.dir</name>")
+
+
+
+data_rdd.saveAsTextFile("hdfs://localhost:9000/apps/tenant1/data/spark_outputdir/spark_output01")
+-- The path is a directory path and not a file path.
+-- Even if a extention is used, a directory of that name is created and files are places inside it.
+-- In the target directory, one _SUCCESS file is present and one or more than one data file is present
+-- Observed that the number of data files created in the target directory is equal to the number of RDD PARTITIONS
+-- Writing to an existing directory is an org.apache.hadoop.mapred.FileAlreadyExistsException 
+
+
+
+scala> parallelize_data.glom().collect()(4)
+res50: Array[Int] = Array(7, 8)
+-- To get the data of a particular partition only.
+
+scala> parallelize_data.glom().collect()
+res55: Array[Array[Int]] = Array(Array(1), Array(2, 3), Array(4, 5), Array(6), Array(7, 8), Array(9, 10))
+
+
+scala> parallelize_data.mapPartitionsWithIndex( (index: Int, it: Iterator[Int]) =>it.toList.map(x => if (index ==5) {println(x)}).iterator).collect()
+9
+10
+res57: Array[Unit] = Array((), (), (), (), (), (), (), (), (), ())
+
+
+
+scala> parallelize_data.saveAsObjectFile("hdfs://localhost:9000/apps/tenant1/data/spark_outputdir/spark_parallelize02")
+-- Object is stored in binary form
+-- Written using Java serialization, which can then be loaded using SparkContext.objectFile().
+
+
+
+
+data_rdd.foreach(l => println(l))
+
+data_rdd.map(l => l.length()).foreach(l_n => print(l_n))
+
+

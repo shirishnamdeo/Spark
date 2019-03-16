@@ -1,5 +1,6 @@
 https://www.dezyre.com/article/how-data-partitioning-in-spark-helps-achieve-more-parallelism/297
 
+https://www.edureka.co/blog/demystifying-partitioning-in-spark [Need to read]
 
 RDDs are stored in partitions and operated in parallel.
 Q. RDD logical entity?? --vs-- partitions a physical entity??
