@@ -1,0 +1,16 @@
+SparkContext-vs-SparkSession
+https://data-flair.training/forums/topic/sparksession-vs-sparkcontext-in-apache-spark/
+
+
+Spark context sets up internal services and establishes a connection to a Spark execution environment.
+Once a SparkContext is created you can use it to create RDDs, accumulators and broadcast variables, access Spark services and run jobs (until SparkContext is stopped).
+
+
+https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-SparkContext.html
+https://stackoverflow.com/questions/24637312/spark-driver-in-apache-spark
+
+https://www.quora.com/What-does-the-master-node-and-driver-program-mean-in-Spark-Are-they-the-same-concept
+
+https://www.edureka.co/blog/spark-architecture/
+
+

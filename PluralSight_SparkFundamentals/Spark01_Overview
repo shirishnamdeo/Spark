@@ -1,0 +1,115 @@
+Apache Spark - A framework for processing for Big-Data 
+
+Map-Reduce is initially build to solve the same problem, ie parallelizing the processing on distributed cluster. 
+This reduce the latency with several magnitudes as compared to the single machine processing.
+But Map-Reduce has some limitation:
+	Batch processing
+	Algirithm Complexity
+	Disk Bottle-necks
+
+
+Spark uses less recoruces and still runs magnitude faster then Map-Reduce processing.
+https://databricks.com/blog/2014/10/10/spark-petabyte-sort.html
+https://databricks.com/blog/2014/11/05/spark-officially-sets-a-new-record-in-large-scale-sorting.html
+-- 3x Faster, 10x less machines
+-- Spark beats sorting benchmarks at end of 2014
+
+
+Spark (Computation Engine & Framework):-
+	Less Processing Time
+	Less Processing Resources
+	Less Code (with Spark Generalized Abstractions)
+	Increases Readability 
+	More Expressive Code
+	Testability (Write code as if isn't distributed)
+	Interactive (spark-shell - help in debug)
+	Fault Tollerance (Note that this Fault Tollerance is different from HDFS Fault Tollerance)
+	Unify different Big-Data into a framework (SQL, Streamng, ML, Graph)
+
+
+
+
+
+
+
+Map-Reduce is a like pushing a square peg through a round hole, meaning Map-Reduce is vvery restrictive in its deisgn, as it has very narrow focus specificly on Batch processing.
+This over spefication led to the explosion of the libraries each for a specific purpose & problem. 
+Streaming -> Strom
+Scalding
+Hive
+Apache Drill
+Apache Giraph
+Hbase
+Mahout
+Pig
+Flume
+Sqoop
+
+Then along came Spark generalized abstraction of big-data computing, bringing the big-data pipeline to one cohesive unit.
+Spark aims to be a unified platform of big-data, as SDK
+
+In spark everything is built on core library, so any thing build on top of core lib will automatically gains from the improvements in Core library.
+Core is very generalized. Extending it is very simple and straig-rforward.
+ 
+Spark-SQL
+Spark Streaming
+MlLib
+GraphX 
+-- All built on top of Core library.
+-- Anythin in spark is built on top of core library, and use all the code and functionality provided by the core library.
+
+
+
+Hadoop Map-Reduce	: 100000+ lines of code
+Impala				: Near to 1000000
+Strom				: 80,000
+Giraph				: 60,000
+
+Spark 				: 40,000 --
+Spark-SQL			: 30,000 (lagre fraction of code in optimazation purpose)
+Streaming 			: 6000
+GraphX 				: 3000
+
+
+With spark we have only one framework to learn for all the processing, instead of many disparate parts.
+
+
+
+
+
+
+
+
+
+History of Spark:
+
+Map-Reduce	: 2004
+Hadoop		: 2006
+Spark 		: 2009/2010
+AmpLab 		: 2011 (Berkley - Algorithems Machine People)
+Databricks 	: 2013 (Commercializing Spark), Apache License
+
+
+Spark releases stable version with binary compatibility, which mean Spark Upgrade would not require the rebuilding the project.
+
+Spark Alpha package ??
+
+
+
+
+
+
+
+
+
+Spark Languages:
+Scala (Spark written in Scala)
+Java (Any scala library is compatible with Java)  -- Why?
+Python (Some part of spark that aren't full featured in using python library)
+R (with 1.4 release)
+
+
+
+
+
+

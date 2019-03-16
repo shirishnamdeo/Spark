@@ -1,0 +1,137 @@
+Spark Libraries
+
+
+Spark-SQL: ______________________________________
+
+Allows developers to write the declarative code. Letting the engine to use as much of the data sn storage structure as it can to optimize the results and distribute the query behind the scene.
+
+Hive 
+Apache Drill
+Impala -> written in C++ and it beats spark in direct performance benchmarks. It was build from scratch, for more specific cases than spark general engine, and so impala is especially optimized for SQL queires. 
+
+
+
+Spark-SQL Optimizations:
+	Predicate push down -> Where a optimization engine and can  analyze whether a filter can be pushed below shuffling operators or even to the storage level itself.
+
+	Column prunning -> Where the analyzer can figure our through the projections whether if only needs a subset of the columns for the final output, dropping other unnecessary columns data. 
+
+
+Uniform API 
+
+Interface provided are uniform across all languages, creating a domain specific language for common tasks. This uniform API means all languages can be compiled down to the same JVM bytecode, even Python.
+
+Conversion betwee SQL and RDD is simple and all the spark libraries externd the core and its RDD abstractions.
+So we can go to unserlying RDD, if we find SQL sysntax to be too restrictive and popping back into SQL.
+
+There is one caveat though. While working with SQL, you lose compile time type safety, as each row of is stored in a generic object called row.
+So when we convert to RDD, we will be given an RDD of type Row. 
+
+
+
+DataFrames:
+
+
+sqlContext.createDataFrame(pandas) 
+sparkDataFrame.toPandas() -> Although, since pandas isn't distributed, converting to pandas local verison is equivalent to calling collect on an RDD. All the data will need to fit into driver. 
+
+
+
+
+The starting point of a spark sql programme, is a SQL context, which is juat s wrapper around the regular Spark Context. 
+
+
+The default sqlContext in spark-shell is actually a Hive SQL context, which is just one abstractions level higher.
+Also this context doen not share its hive metastore. 
+-- Might get into problems if you use SQL in multiple shell at same time.
+
+
+import sqlContext.implicits._
+
+  	
+sqlContext.sql()
+
+
+
+.toDF 
+
+
+DF.show
+
+sqlContext.read.json()
+sqlContext.read.format("json").load()
+
+DF.printSchema
+	-- Can also figure out the metadata, like json
+DF.unionaAll()
+DF.select($"name", $"employeeCount".cast("int").as("employeeCount"), $"isPublie")
+DF.groupBy
+
+
+import org.apache.spark.sql.functions._
+
+
+DF.write.json
+DF.write.format()
+
+DF.registerTempTable
+
+
+
+
+sql("CACHE TABLE tablename") -> Eager execution
+sql("CACHE LAZY TABLE tablename") -> Lazy execution
+
+
+
+
+
+
+
+Spark Streaming: ________________________________
+
+Spark Streaming has boaster the ability to stream Gigabyte per second. [Big-And-Fast Data]
+
+Spark Streaming vs Stroam  
+
+Stroam is a true streaming framework, processing each item one by one as it arrives.
+Whereas Spark process the incoming data as a seroes of small deterministic batch jobs. -> Micro-Batching Streaming.
+
+No of sources to get the strimming data, eg Kafka, Flume, Twitter, even a file system HDFS ca act as a straming source, and many others.
+
+Spark Stream Reveiver.
+Spark stores the incomming data into a series of RDD's, delineated by a specified window of time.
+And after each time window, the pre setup taks are passed to into Spark Core for processing as normal. 
+So stream becomes a series of mini RDD's. 
+
+D-Stream 
+
+Note that there are two poing of spark processing. The receiver and the Worker. 
+So we need atleast one code for input soruce and atleasrt onc core for worked execution. 
+
+There RDD are cached as Memory ONLY Sereliazed.
+Serialization reduce the Garbage collection pauses since Serialized data is stored as one single blob.
+This reduction in GC pausing result in more consistent processing time.  
+
+ 
+
+
+
+
+MlLib: __________________________________________
+
+org.apache.spark.mllib
+org.apache.spark.ml
+
+
+
+GraphX: _________________________________________
+
+Its a library which brings the sparks table-like structure into a graph-structured world.
+Unifying data parallel and graph parallel analytics.
+RDD behind the scene.
+Storing the data in graph optimized structured named 'graph', which is its hight level abstration.
+
+
+GraphX vs Apache GIRAPH vs GraphLAB 
+

@@ -1,0 +1,149 @@
+Distribution and Instrumentation
+
+
+Cluster Manager
+Spark Maintenance
+
+
+
+
+
+When an application is submitted, it launches a driver which will runs through the application's main method.
+Q. Is the driver runs the step-by-step instructions containd in the main method?
+
+This driver process could reside on the submitting machine, or on the distributed clusterss master node depending on how it is submitted.
+
+Then the driver ask the Cluster Manager for a specified ammount of resources. As long as those resources are available, these will be provided and the cluster will spn them up for use. 
+
+Then the driver will run through the main application, building up the RDD untill it hits an action. 
+Which caused the Driver to trigger the execution of the DAG and manage that workflow.
+
+Once this is complete, the driver continuees through the main code until the entire execution is done.
+At that point the resources are cleaned up.
+However, this resource cleanup could occure before driver completes if the Spark COntext stop method is called before then. 
+
+
+
+
+
+spark-submit 
+spark-submit --help
+spark-submit --kill
+spark-submit --status -> For Monitor
+
+-- Only available for Spark Standalone or Mesos. *** Still not available for YARN??
+
+--master -> more often for address of the Cluster Manager
+--deploy-mode -> client/cluster
+				Will determine where the driver of the main application will reside. 
+				If clinet, then driver will run on the same machine from which we are launching it from. This is not optimal for large or long running job, as there is a lot of communication between Driver and Workers. 
+				Cluster mode will spin up the Driver on the master insted. 
+
+--class	->  This sepcify the main method. This can be ommited if the submitted JAR Mainfest specified the 	main-class attribute.
+
+--jar -> Contains a comms separated list of jars will be distributed on all the executors.
+         Although in Scala we can built a UBER jar (fat jar), to avoid this necessity.
+
+--pakages/--repositories option also help in dependency anagement
+
+
+--files options is to pass the auxilary files that need to be accessible by all workers.
+ 		These files will be placed in the workers node working directory ans can be accessible in the code using SparkFiles.get 
+
+--conf -> Take the key value pairs
+--properties-file -> Take a conf file
+
+
+Order of precedence:
+Code
+Spark-submit --flags
+properties file
+defaults
+
+
+--driver-memory
+--executor-memory -> Memory for each executor
+
+
+
+
+
+Clusteer Managers: ______________________________
+
+A Cluster manager on a very high level can be understood as an anology with Kerel.
+As a kernel(itself a process) manages many processes.
+A cluster manager's job is to manage all of the machines and the tasks running on them.
+
+Cluster Manager VS Resource Manager ***???
+
+
+Cluster Managers for Spark:-
+Spark has its own built-in manager - Spark StandAlone
+	--master spark://hostaddress:7077
+	Standalone Manager work with both deplyment modes, client and cluster.
+	spark.deploy.spreadOut=false/true
+	--total-executor-cores=# -> same as spark.cores.max property. Default will utilize as many cores as available to the cluster.
+	--executor-cores=# -> To specify the number of cores to use on each executor.
+
+Hadoop comes with its own manager names YARN.  
+YARN:
+	--master yarn
+	YArn will FORCE the fixed number of resources which will be set by 
+	--num-executors (default 2)
+	--executor-cores (no of cores within each executor, default 1)
+	--queues -> YARN has the concept of queues to cap resource ussage. If it is enabled then a queue can be specified.
+
+Mesos -> Arguble more flexible, but comparable to YARN wthout the hadoop baggage.  
+	--master mesos://hostname:5050
+	Provide dynamic handling of resources.
+	Applications can increase or release resources itself
+	Fine and Coarse Grained way to allocate resources.
+
+
+Should not request any more resources than is available, or else your job will never even start. 
+The scheduler do nothing but waiting for the resources forever.
+
+
+
+
+
+Spark Standalone: _______________________________
+
+Spinning up Spark Standalone:-
+To start, we need to copy a compiler version of spark to the SAME DIRECTORY on all of the machines that make up the cluster.
+$SPARK_HOME env variable on each machine.
+
+On the master machine we need to have a conf directory in your spark home directory. And inside there shoudl be slaves files, simply listing the address of each slave computer.
+If this file is not present then the local host will be used (Which is nice for running some simple tests)
+
+sbin/start-all.sh
+Which requires a password less SSH to be setuwp from the master to each of the slave machines.
+
+On Windows something don't work. So we need to manuall launch them using spark-class 
+
+
+spark_ec2.py -> To setup spark on EC2
+
+
+
+
+stderr and stdout are created on the slaves nodes.
+println -> Statements run on the slave nodes will be in stdout on the slave node log folder.
+
+
+
+Spark UI
+A job is submitted everytime an action is called. So the discription is the address which triggers the job.
+Stage: Is a groupping of RDD transformations that can be completed without having to Shuffle or reference data from other partitions. 
+Tasks: Are actual function executed on each partition. 
+
+
+
+Spark has a spark history server -> Can be started in YARN/Mesos
+In standalone it is available.   18080 port
+
+
+
+
+Resources: ______________________________________
+

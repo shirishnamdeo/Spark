@@ -1,0 +1,15 @@
+Download Apache Spark 
+
+
+Spark 2.4.0 (with Hadoop 2.9.2)
+
+
+
+export SPARK_HOME=/home/notebook/Material/SoftwareInstall/Spark/spark-2.4.0-bin-hadoop2.7
+export SPARK_BIN=/home/notebook/Material/SoftwareInstall/Spark/spark-2.4.0-bin-hadoop2.7/bin
+
+export PATH=$PATH:$SPARK_BIN
+
+
+
+

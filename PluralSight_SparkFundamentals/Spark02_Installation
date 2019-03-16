@@ -1,0 +1,96 @@
+Spark Installation:
+
+
+Windows Installation:
+https://www.ics.uci.edu/~shantas/Install_Spark_on_Windows10.pdf
+
+
+Apache Spark Home Page: https://spark.apache.org/
+Download a pre-built version  
+
+
+I believe pre-built Spark doesn't need Scala to be installed. Yes, Conformed. It doesn't need scala to run from Pre-build Version. 
+But Scala would be needed for development and writing spark code.
+
+
+What about Hadoop and HDFS??? *** 
+
+
+
+Scala is only needed when we want to build up spark form the soruce code. [When we need to work with something that the pre-built version don't have.]
+The easiest way to do this is to use  a link given on spark website.
+Pre-requisit: 
+	Scala Installed
+	A build tool such as Maven or SBT
+
+
+
+Default logging on the spark shell is quite verbose. [This is very useful while debugging]
+If you need to tone this down, go to conf folder, copy log4j.properties.template file in the same directory, log4j.properties and change all logging to ERROR, so only error messages will be output.
+
+In Windows environent, we get an error for winutils.
+SPARK-2356 Bug, which is really a hadoop bug which results in exceptions when working with Windoes filesystem.
+
+To remedy this error, add winutils.exe in spark/bin direcotry and add a HADOOP_HOME variable.
+[I believe as I have already installed Hadoop and Winutils is already in HADOOP_HOME. Yes, confirmed. Let be in HADOOP_HOME where hadoop is already installed and it will work ]
+
+
+Winutils can be downloaded from SPARK-2356 ticket too.
+https://github.com/steveloughran/winutils/tree/master/hadoop-2.6.0/bin
+
+
+spark-shell
+
+
+
+
+ERROR: It might be possible that the spark will show the error that 'the system cannot find the path specified'
+
+This is due to the incorrect JAVA_HOME env variable, as Spark looks for everything relative to JAVA_HOME & HADOOP_HOME variable.
+
+Below is the list of all the correct env variable with PATH
+
+
+JAVA_BIN
+D:\SoftwareInstalled\Java\JDK8\bin
+
+JAVA_HOME
+D:\SoftwareInstalled\Java\JDK8
+
+HADOOP_BIN
+D:\SoftwareInstalled\Hadoop\Hadoop277\hadoop-2.7.7\bin
+
+HADOOP_SBIN
+D:\SoftwareInstalled\Hadoop\Hadoop277\hadoop-2.7.7\sbin
+
+HADOOP_HOME
+D:\SoftwareInstalled\Hadoop\Hadoop277\hadoop-2.7.7
+
+SPARK_BIN
+D:\SoftwareInstalled\Spark\Spark240\spark-2.4.0-bin-hadoop2.7\bin
+
+SPARK_HOME
+D:\SoftwareInstalled\Spark\Spark240\spark-2.4.0-bin-hadoop2.7
+
+
+
+
+
+Available tools within spark
+
+spark-shell
+spark-shell2
+
+spark-submit
+spark-submit2
+
+sparkR
+sparkR2
+
+beeline  -- why this is provided?
+
+pyspark
+pyspark2
+
+
+

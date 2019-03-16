@@ -1,0 +1,106 @@
+https://www.dezyre.com/article/how-data-partitioning-in-spark-helps-achieve-more-parallelism/297
+
+
+RDDs are stored in partitions and operated in parallel.
+Q. RDD logical entity?? --vs-- partitions a physical entity??
+
+
+Usually RDD are so big that cannot fit onto a single node, and has to be partitioned across multiple nodes.
+Spark partitions the RDD and distribute these partitions over nodes in cluster.
+
+A partition in Spark is the atomic chunk of data. (I think it means there is not smaller unit of data in spark)
+
+
+A single partition in Spark do not span more than one machine.
+
+One way to increase the parallelism in spark is to increase the number of Executors (though not always benificial)
+Spark tries to minimize network transfers and communication , as it is an expensive resources.
+
+Minimize network traffic for sending data between executors.
+By default, Apache Spark reads data into an RDD from the nodes that are close to it.
+Q. How does it read data for a partition on a nodes? Does spark read data for each partition level?
+
+
+
+Partitioning in Spark might not be helpful for all applications, for instance, if a RDD is scanned only once, then portioning data within 
+the RDD might not be helpful but if a dataset is reused multiple times in various key oriented operations like joins, 
+then partitioning data will be helpful.
+Q. Why if for a single scan, partitioning is not helpful?
+
+
+Partitioning is an important concept in apache spark as it determines how the entire hardware resources are accessed when executing any job
+In apache spark, by default a partition is created for every HDFS partition of size 64MB. 
+[And some methods just create some default number of partitions atleast, like parallelize(), textFile()]
+
+For custom partitioning developers have to check the number of slots in the hardware and how many tasks an executor can 
+handle to optimize performance and achieve parallelism.
+
+
+Apache Spark can run a single concurrent task for every partition of an RDD, up to the total number of cores in the cluster. 
+If a cluster has 30 cores then programmers want their RDDs to have 30 cores at the very least or maybe 2 or 3 times of that.
+**Q. Shouldn't we should keep the partitions less than the number of available cores, so that all the computation on partitions can
+be done on same time, rather than 2, 3 times of cores??
+
+Sol-> The best way to decide on the number of partitions in an RDD is to make the number of partitions equal to the number of cores 
+in the cluster so that all the partitions will process in parallel and the resources will be utilized in an optimal way.
+(OR a close multiple of it. Eg if 4 cores and 5 partitions with 10 min each partition work, then the 5th partition will be a lone
+one and 3 cores will be idle)
+
+
+
+Too many partitions is also bad. Task Scheduler may take more time.
+Too less partitions -> Under utilization and data Skewness (as data will not be well distributed in cluster)
+
+
+General Guidelines:-
+The lower bound for spark partitions is determined by 2 X number of cores in the cluster available to application.
+Determining the upper bound for partitions in Spark, the task should take 100+ ms time to execute. If it takes less time, then the partitioned data might be too small or the application might be spending extra time in scheduling tasks.
+
+
+Types of Partitioning:-
+HASH partitioning
+Range Partitioning
+
+Hash Partitioning in Spark
+Hash Partitioning attempts to spread the data evenly across various partitions based on the key. Object.hashCode method is used to determine the partition in Spark as partition = key.hashCode () % numPartitions.
+Q*** But isn't it cause more data movement between executors?
+
+
+
+Range Partitioning in Spark
+Some Spark RDDs have keys that follow a particular ordering, for such RDDs, range partitioning is an efficient partitioning technique. 
+In range partitioning method, tuples having keys within the same range will appear on the same machine. 
+Keys in a range partitioner are partitioned based on the set of sorted range of keys and ordering of keys.
+
+Spark’s range partitioning and hash partitioning techniques are ideal for various spark use cases but spark does allow users to fine 
+tune how their RDD is partitioned, by using custom partitioner objects. 
+Custom Spark partitioning is available only for pair RDDs i.e. RDDs with key value pairs as the elements can be grouped based on a 
+function of each key. 
+Spark does not provide explicit control of which key will go to which worker node but it ensures that a set of keys will appear 
+together on some node. For instance, you might range partition the RDD based on the sorted range of keys so that elements having 
+keys within the same range will appear on the same node or you might want to hash partition the RDD into 100 partitions so 
+that keys that have same hash value for modulo 100 will appear on the same node.
+
+
+
+RDDs can be created with specific partitioning in two ways –
+Providing explicit partitioner by calling partitionBy method on an RDD,
+
+Applying transformations that return RDDs with specific partitioners. Some operation on RDDs that hold to and propagate a partitioner are-
+Join
+LeftOuterJoin
+RightOuterJoin
+groupByKey
+reduceByKey
+foldByKey
+sort
+partitionBy
+foldByKey
+
+
+
+
+
+
+
+

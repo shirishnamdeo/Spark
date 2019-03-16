@@ -1,0 +1,21 @@
+In the Spark shell, a special interpreter-aware SparkContext is already created for you, in the variable called sc. Making your own SparkContext will not work. 
+
+You can set which master the context connects to using the --master argument, and you can add JARs to the classpath by passing a comma-separated list to the --jars argument. 
+You can also add dependencies (e.g. Spark Packages) to your shell session by supplying a comma-separated list of Maven coordinates to the --packages argument. 
+
+Any additional repositories where dependencies might exist (e.g. Sonatype) can be passed to the --repositories argument. 
+
+
+For example, to run bin/spark-shell on exactly four cores, use:
+$ ./bin/spark-shell --master local[4]
+
+Or, to also add code.jar to its classpath, use:
+$ ./bin/spark-shell --master local[4] --jars code.jar
+
+
+To include a dependency using Maven coordinates:
+$ ./bin/spark-shell --master local[4] --packages "org.example:example:0.1"
+
+
+For a complete list of options, run spark-shell --help. Behind the scenes, spark-shell invokes the more general spark-submit script.
+https://spark.apache.org/docs/2.4.0/submitting-applications.html

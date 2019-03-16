@@ -1,0 +1,184 @@
+https://kaizen.itversity.com/setup-development-environment-intellij-and-scala-big-data-hadoop-and-spark/  [10]
+
+
+
+Initiate the spark-shell
+
+Note that the spark shell create context and session on initialization.
+
+Spark context Web UI available at http://NOTEBOOK-SYS:4040
+Spark context available as 'sc' (master = local[*], app id = local-1544973808908).
+Spark session available as 'spark'.
+
+
+scala> sc.version
+res2: String = 2.4.0
+
+scala> spark.version
+res3: String = 2.4.0
+
+With old version of spark, 'sqlContext' is created which is used with Spark-SQL library.
+
+sc is the Spark-Context, and is the main starting point of an spark application.
+All spark jobs BEGIN by creating a Spark context which will act as a deligator of many aspects of control for the distributed application.
+
+
+Lets read a file from Local FS:
+D:\SoftwareInstalled\Spark\Spark240\spark-2.4.0-bin-hadoop2.7\README.md
+
+val textFile = sc.textFile("file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/README.md")
+-- Notice that the slashes are UNIX type.
+
+sc.textFile("file:\\\D:\SoftwareInstalled\Spark\Spark240\spark-2.4.0-bin-hadoop2.7\README.md")
+-- This doesn't woek!!
+
+The result of loading this file is an RDD -> org.apache.spark.rdd.RDD[String]
+
+
+RDD is the most basic abstraction of Spark. [Resilient Distributed Dataset]
+
+
+
+ACTIONS AND TRANSFORMATION ________________________________________________________________________
+
+Spark core operaion are split into two Categories: Actions and Transformation
+Transformations are lazily evaluated only storing the intent.
+It isn't untill an action is executed that the results are actually computed. 
+
+textFile.first
+textFile.first()  --scala work with with and without the brackets
+
+scala> textFile.first
+res13: String = # Apache Spark
+
+-- The 'first' is an action which return the first line of our text
+
+There are many benifits of Spark's lazyness. As here we don't need to read entire file and only the first line. Had this been not been lazy we could have loaded completed text file only to realize that all but the first line could be dropped.
+
+These optimization is very important when working with truly Big-Data. 
+
+
+-- We now map each line of the file, splitting it into an array of space delimited words, and flatenning the resulting sequence of string arrays int a single long sequence.
+val tokenizedFileData = textFile.flatMap(line=>line.split(" "))
+-- tokenizedFileData: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[4] at flatMap at <console>:25
+-- So now we have a new RDD. However the string it represent is not a line of a file but instead all of its words.
+
+scala> tokenizedFileData.first
+res12: String = #
+
+scala> tokenizedFileData.count()
+res14: Long = 579
+
+  
+val countPrep = tokenizedFileData.map(word=>(word, 1))
+-- countPrep: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[5] at map at <console>:25
+-- We have setup our sequence for counting by changing each word into a key-value pair where the word is key and the value is the count.
+
+
+countPrep.count()
+res19: Long = 579
+
+scala> countPrep.first
+res20: (String, Int) = (#,1)
+
+
+
+val counts = countPrep.reduceByKey((accumValue, newValue) => accumValue + newValue)
+-- counts: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[7] at reduceByKey at <console>:25
+
+val sortedCounts = counts.sortBy(kvPair => kvPair._2, false)
+-- sortedCounts: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[12] at sortBy at <console>:25
+
+
+sortedCounts.saveAsTextFile("file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/output_data/sorted_wordscount_example_README.txt")
+
+-- A folder is created of the name we have given as a text file. This is because this is written out a HDFS. 
+-- Inside we can see the more than one parts. 
+The number of parts of a file are equal to the number of partitions that our dataset was distributed across. 
+But the ordering is preserved, with the first file containing our largest items and the second continuining the list. 
+This ordering would be maintained no matter how many partitions were used. 
+The data woudl just be split into more files, which would be distributted across a number of machines in the cluster.
+
+-- We have just seen the Map-Reduce way of counting the words frequency.
+
+This requirement is so common that there is an API for it, 
+tokenizedFileData.countByValue 
+-- It combines the Map and Reduce by Key into one well named method. 
+
+
+
+
+While Spark was origionally built to target Hadoop, it has grown past that and is not a general purpose computing frameword that is capable of handeling many different distributed systems.
+
+ 
+
+Alpha Component Library Spark ???
+
+
+
+
+
+val textFile = sc.textFile( path = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/README.md")
+val tokenizedFileData = textFile.flatMap(line=>line.split(" "))
+val countPrep = tokenizedFileData.map(word=>(word, 1))
+val counts = countPrep.reduceByKey((accumValue, newValue) => accumValue + newValue)
+val sortedCounts = counts.sortBy(kvPair => kvPair._2, ascending = false)
+sortedCounts.saveAsTextFile( path = "file:///D:/NotebookShare/Material/Hadoop/ApacheSpark/output_data/sorted_workcounts_exmaple")
+
+
+
+-- Linux
+val textFile = sc.textFile( path = "/mnt/d/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/README.md")
+val tokenizedFileData = textFile.flatMap(line=>line.split(" "))
+val countPrep = tokenizedFileData.map(word=>(word, 1))
+val counts = countPrep.reduceByKey((accumValue, newValue) => accumValue + newValue)
+val sortedCounts = counts.sortBy(kvPair => kvPair._2, ascending = false)
+sortedCounts.saveAsTextFile( path = "/mnt/d/NotebookShare/Material/Hadoop/ApacheSpark/output_data/sorted_workcounts_exmaple")
+
+
+
+
+
+
+ERROR:-
+18/12/17 17:37:16 ERROR SparkContext: Error initializing SparkContext.
+org.apache.spark.SparkException: A master URL must be set in your configuration
+Solved: .setMaster("local")
+setMaster is for telling the execution mode. There are several execution modes. 
+local -> is for local mode.
+pseudo cluster mode -> 
+YARN -> For PROD
+Mesos -> FoR PROD
+
+
+
+
+To build a project, we need to use Build -> Build Artifacts. 
+-- In case it is disabled
+-- To enable:- Projext Structure -> Artifacts -> + -> Jar -> From modules with Dependencies -> Select Main Class
+-- Trigger the Build with Build -> Build Artifacts; A jar will be created in the project's out directory
+
+
+
+Simply running -> spark-submit SparkDemo1.jar  -- will give a class not found exception
+
+
+
+
+
+
+
+spark-submit --class WordCount SparkApp2.jar
+-- Works!!
+-- but an erros is generated:
+-- java.io.IOException: Failed to delete: D:\NotebookShare\Material\Hadoop\ApacheSpark\SparkProjects\temp\spark-a2781f1c-a03b-44e1-a866-3a5b429389dc\userFiles-ca677ecd-0305-499d-901f-a67a365dc76c\SparkApp2.jar
+-- though the output file is generated succssfully.
+-- No solution found till yet 
+-- I also checkd the output with spark-shell, output is complete.
+
+
+-- I even tried to give the different temp dir, but spark is not able to delete this dir too.
+spark-submit --class WordCount --conf "spark.local.dir=D:\NotebookShare\Material\Hadoop\ApacheSpark\SparkProjects\temp" SparkApp2.jar
+
+
+-- Ran it via Windoes Subsystem for Linux and it wokrd absolutely fine!!! 

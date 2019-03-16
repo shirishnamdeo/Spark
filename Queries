@@ -1,0 +1,16 @@
+Do Spark libraries get propagated to all data nodes?
+QUESTION:
+When installing and setup spark client on edge node, libraries don't seems to be propagated on data nodes. 
+Do Spark libraries get propagated to data nodes?.
+
+ANSWER:
+The spark libraries don’t need to exist on all the nodes. Spark is a client, so the library only need to be present in the host where the user submits the job from. When the spark job get launched, the required jars will be uploaded to the HDFS and shipped to the distributed cache for run-time requirement. 
+
+
+
+
+
+
+
+Q: What are the roles and responsibilities of worker nodes in the apache spark cluster? Is Worker Node in Spark is same as Slave Node?
+A: Worker node refers to node which runs the application code in the cluster. Worker Node is the Slave Node. Master node assign work and worker node actually perform the assigned tasks. Worker node processes the data stored on the node, they report the resources to the master. Based on the resource availability Master schedule tasks.

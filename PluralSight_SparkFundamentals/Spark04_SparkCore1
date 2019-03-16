@@ -1,0 +1,387 @@
+Spark Core:-
+
+Matae Zaharia (creator)
+Reynold Xin
+PAtrick Wendell
+Josh Rosen
+
+Half the battle is knowing the Core API
+
+Core Abstraction of Spark -> RDD
+
+
+How Spark Works?
+All spark applicaions are managed via a central point, called the DRIVER.
+Driver is the co-oridnator of the work distributing it to as many workers as is configured.
+
+That driver MAANGEMENT is handeled through the starting point of any Spark Application, the SPARK CONTEXT (central manager).
+All spark application is build around this central manager, orchestrated all the different pieces of the distributed application so that it runs as smoothly as possible.
+ 
+It(Spark Context) builds the execution graph that will be sent to each worker, scheduling the work across the nodes, taking advantage of any existing data location [Sending the work to the data so as to awoid any un-necessary data movement across the newtowk], and monitoring those tasks for any faliures so that it can trigger a rebuild for that portion of the dataset on another worker.
+
+Note that there are ways to create multiple context within the same process, but it is not suggested as it could result in unexpected behaviour.
+
+
+Spark context is created by default in the shell
+A standalone application must build its own Spark Context.
+
+
+SparkConf Object: 
+Can be used to describe the spark applicaton's configuration. 
+This object can be used to set any key-value configuration, and for over-ridding.
+.setAppName()  -- Is a common enough method that this has a spedialized method built for it.
+
+SparkContext:
+It also has some default convenience constructors, one been an empty constructor -> configurations to default and property files.
+
+Master Location is best left to the property file, or to be passed in during Application submition.
+Because its the most common point of change in the application life cycle.
+
+
+Configuration can be passed in following ways (also in order of precedence):
+Setting in the code
+Passing in the flags to spark-submit
+Setting in properties file.
+Default build in spark
+
+SparkConf must be set fully before passing it in SparkContext, as once the conf object is passed into context, it is cloned and become immutable inside it, and any changes made to the conf after it would net reflect in spark-context.
+
+
+When spark runs the code, it looks for the main method.  
+In Scala, an app trait can be extended to work as main (but it sometime give unexpected result in spark, avoid it)
+
+For python file, should use:- if __name__ == "__main__", for spark's entry point recognition.
+
+
+sbt package -> to compile and package the jar
+
+In spark-submit:-
+--master "local[*]"  -> Is used to specify to use the local machine for now, opting to utilize as many cores as possible with *, instead of specifying the number of cores in the brackets.
+
+what is % "provided" used in the libraryDependencies list meant?
+
+
+SPARK-8333 ticket regarding window error for tem file delition.
+
+
+While working with Python, the class argument is not needed and Jar is replaced by the python file
+
+Arguments following the final JAR is passed to the main function as application arguments.
+
+
+
+
+
+RDD _______________________________________________________________________________________________
+
+Resilient Distributed Dataset
+RDD is a collection of elements partitioned across the nodes of the cluster taht can be operated on in parallel.
+RDD can be think of as a Collections, like an Array or a List as an abstration. Beding the scene the work is distributed across the cluster of mahines so that the computations can be run in parallel.
+
+Distributed computations means if a node fails, the work on the other nodes can still go on, and the work on the failed node can be restarted elsewhere.
+
+RDD's desing was build up with resilience in mind thus these faliures are just minor road-bumps.
+
+
+This desing that makes fault tllerance easy is due to the fact that most functions in the spark are lazy.
+So insteaf of immediately executing the functions instructions, the same instructions are stored for later use in DAG (Directed Acyclic Graph)
+
+This graph of instructions continues to grow through a series of calls to these transformation such as map, filter and other lazy operaions.
+
+DAG is build up of the functional lineage that will be sent to the wokrers, while will compute the final output for the spark application.
+
+Infact, it is this lineage awareness that makes spark possible to handle faliures gracefully.
+
+Each RDD in the graph knows how it is built. Which allows it choose best path for recovery. 
+
+Actions triggers computations. Operations such as collect, count, reduce.
+Actions triggers the DAG execution.
+
+
+Q. So does each transformation is results in an RDD or the complete sets of transformation till an action is referred to as an RDD?? ***
+
+Q. After an action, does the data is always returned to driver or can be sent to another worker?? ***
+
+Q. Does all the transformations till an action is performed on the same worked node at once? Or one transformation at a time till every other worker node completes that transformation ?
+
+
+RDD is immutable. 
+Q. What if we initially created an RDD with some data and a node faliure occurs and in the meanwhile the underlying data changes? How spark handle this? Does it start with the new data or does spark make a copy of the data prior start a processing?
+
+
+ 
+RDD is operated on like any other collection, additionally it is distributted and executed in parallel where across CPU's, machines or both.
+
+Each worked node can muliple executors. 
+Driver program has SparkContext.
+When an action is triggered, the drver and the context distributes the TASKS to each of the worker node, which transform their respective chunks as quickly as that can.
+
+Once all nodes has completed theor tasks, then the next stage of the DAG can be triggered.
+
+If during the application run, if a chunk of data is lost, then the DAG scheduler can find a new node and restart the transformation from an appropiate point, returning to the synchronization with rest of the nodes.
+
+Q. Does every RDD of the DAG is ketp preserved till the full application is completed? Or only the RDD at the action stage?
+
+
+
+
+
+Loading Data ______________________________________________________________________________________
+
+From Local FS   	file:/
+From HDFS			hdfs:/
+From Amazon S3 (Simple Storage System)  s3n:/
+
+From Databases (also distributed, like Cassandra)
+
+From Memory ()
+
+File formats like Avro, Parquet
+
+Many more. If you can store it, then there is chance that spark can load it.
+
+
+-- Memory Loading Methods _______________________
+sc.parallelize(1 to 100)
+-- Loading from memory
+-- parallelize is a method to distributed a range sequence from 1 to 100.
+-- RDD can keep ordering when able.
+-- Can see the method signature by hitting the TAB twice.
+
+-- numSlices: Is the optional parameter to override the number of pastitions. This parameter is found in almost every RDD loading method. If not supplied then spark uses the default parallelism, which in our case of shell run is total number of cores.
+
+sc.makeRDD  [same as parallelize method. Also had one more signature to specify the partition locations]
+
+sc.range(1, 100)  -- Method for generating an RDD with given range 
+
+
+
+
+sc.readTextFile 	: will break the file into lines
+sc.wholeTextFile	: 
+
+
+
+
+import org.apache.hadoop.io_  : Namespace to make use of writable classes to load the Sequence files, a specialized key-value format build for parallelism.
+sc.sequenceFile 	: To handle data of key-value pairs. 
+sc.sequenceFile(filepath, key-type, value-type)
+
+A good rule is to load such data and immediately map to a native type.
+.map(kv._1.toString, kv._2.get)
+This avoids problems with Serializations and other pottentials pitfalls surrounding the way Hadoop reads data. 
+
+To avoid the above two step provess we can use Scala way
+sc.sequenceFile[String, Int](filepath)  -- this will result in directly in the same type as our combined load and map.
+
+
+You can just use the 
+.collect 
+on the shell after an RDD on shell. I believe we can run and transformation or action in the same way one after another without actually saving in variables.
+
+
+
+sc.objectFile(path)  -- For NULL keyed sequence file
+
+
+sc.hadoopFile : This take any hadoop supported file format. This is a more generic method. 
+
+Old Hadoop API, New Hadoop API
+-- Hadoop API changed some time recently.
+-- For using the new API, just append newAPI as the prefix to the methods
+
+sc.newAPIHadoopFile
+
+Even more generic method is hadoopRDD.  The only difference between hadoopFile and hadoopRDD is that hadoopRDD doesn't take a file path. Insteady a jobConf is required with input path.
+
+
+
+
+ 
+
+
+
+Lambdas: ________________________________________
+
+Lambda Expressions == Anonymous Functions
+
+Ex. line => line.split(" ")   <- Is a lambda expression
+
+In Lambda expression, everying on the left side of the arrya (=>) made up the parameter list.
+Every thing on the right side of the array, is equivalent to the any methods body.
+ 
+Scala has ability of mulit-line labdba
+Python has only one line lambda
+
+
+
+
+Transformations: ________________________________
+
+As the name suggest, these methods take a input data set, run it through the provided transform function, into another another dataset. 
+To know if an RDD method is a transform or not, look at the return type signature.
+A transformaion return another RDD, lazily building up the graph of operations to be acted on via an Action. 
+
+ 
+Note that it is always best to convert the hadoop data to string. 
+
+
+
+.map
+.flatmap 
+.filter
+.distinct
+.sortBy
+.sample
+.keyBy
+.groupBy  -- expensive
+
+
+
+
+
+What is a FAT/UBER JAR
+sbt assembly 
+
+
+
+
+MAP: ____________________________________________
+
+map vs mapPartitions vs (glom)
+
+Per my understanding, map runs on each of the records while the mapPartitions will do it once for each partition. ** Need to look into this defination more.
+Also I believe that with a mapPartitions there is a sigle object that is create (not sure), thus halp with Garbage collection.
+
+GLOM: Returns an RDD of array where each item is a partition. But this has memory cost to store the data in array format.
+
+MapPartitions is suggested approach.
+
+
+
+
+RDD Combiners: __________________________________
+
+.union
+.unionDistinct <- I guess
+++ operator
+sparkContext.union  <- to combine more than two RDD
+
+
+RDD1.intersection(RDD2)
+
+RDD1.subtract(RDD2)
+
+RDD1.carterisan(RDD2)  -> With map the same functionality is not possible as it is impossible to work on another RDD within one RDD
+
+
+RDD1.zip(RDD2) -> This requires boths RDD's to have same number of partitions, and same number of elements inside each partitions. Reasons is that each item across the distribution needs to have a pair, else resulting RDD would have dangling references.
+
+RDD1.zipwithindex
+RDD1.zipwithUniqueId
+
+
+
+
+
+Actions: ________________________________________
+
+While ransformation been lazy and keep data as distributed as possible, actions TYPICALL result in data being sent back to the driver program.
+
+If a method is an action if it does not return an RDD.
+
+Although some actions will run the functions on each partition first, before executing it on the driver. 
+In hadoop this is knows as mapSideCombined ***, and ofter result in a performance gain as it minimize the network traffic.
+
+Example of mapSideCombined: Suppose we are doing a work-count on a distributted file. In mapSideCombined, instead of passing each of the millions ('and', count) pair to the driver, count the instances on each of the partition and merely merging different partition relult on the driver.
+
+To work through, it requires function parameters to be Associaive.
+
+
+
+Associative Property: ___________________________
+
+Associative property says that the result will be independet of how we calculate.
+a+b+c+d == (a+c) + (b+d) == (a+c+d)+b
+
+
+Associative Property calculations are very important in distributted processing.
+
+
+
+Actions Methds: _________________________________
+
+.collect -> collect etire RDD collection back to the Driver as an ARRAY. Essentially the entire data-set would be pulled back to the driver.
+-- If it can't fit on dirver memory, then we will get out-of-memory exception.
+-- Make sure whatever you are collecting fits into the driver memory.
+
+
+.take(n)  -> first N number of elements
+.takeSample()
+.takeOrdered
+.top -> 
+
+.max
+.min
+
+ 
+
+
+spark-shell can be loaded with jars using --jars "JAR NAME"
+import main._
+
+
+
+.distinct.count
+.countApproxDistinct(0.0005)  -> Does the same thing a above, except that it accept a parameter for relative accuracy. 
+
+.countByValue
+.maxBy
+
+
+.reduce ->  This method is to reduce the collection  
+Due to the distributed nature, Sparks implementation is different. Spark uses Associative and Cummulative propert (changing order has no effect)
+
+
+.aggregate()
+
+.fold
+
+
+
+Saving a big-data is ofen done in a similar distributed fashion, and thus doesn't need to be pulled back to the driver.
+Insteadm it can be written directly from the workeds to the data source, eg: Cassandra, mongoDB, hdfs, redshif, or anyother persistent source.
+
+.saveAsObjectFile
+.saveAsTextFile 
+External connector  
+-- foreach
+-- foreachPartition
+
+
+
+Resources: ______________________________________
+
+RDD Research Paper:
+https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf
+
+
+https://www.infoq.com/presentations/abstract-algebra-analytics
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+Checkpointing in Spark

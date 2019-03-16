@@ -1,0 +1,11 @@
+Crtl+Space		: Code complete feature to complete different statements
+Alt+F7			: Quickly find all the places where a Class, Method or Variable is used
+Ctrl+Q 			: To see the documentation
+Ctrl+B 			: To Navigaate to the declaration of Class, Method and Variable (can also use mouse click and Ctrl key)
+Ctrl+F12 		: You can quickly navigate in the currently edited file with Ctrl+F12 (Navigate | File Structure).
+				  It shows the list of members of the current class. Select an element you want to navigate to and press the Enter key or the F4 key
+Shift+F6		: You can easily rename your classes, methods and variables with automatic correction of all places where they are used.
+				  To try it, place the caret at the symbol you want to rename, and press Shift+F6 (Refactor | Rename). 
+				  Type the new name in the popup window that appears, or select one of the suggested names, and press Enter.
+Ctrl+O 			: You may easily override methods of the base class by pressing Ctrl+O (Code | Override Methods).
+Ctrl+I 			: To implement methods of the interfaces that the current class implements (or of the abstract base class), use Ctrl+I (Code | Implement methods).

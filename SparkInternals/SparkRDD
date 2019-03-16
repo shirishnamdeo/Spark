@@ -1,0 +1,128 @@
+Web Reference : https://www.dezyre.com/article/working-with-spark-rdd-for-fast-data-processing/273
+
+Spark revolves around the concept of a resilient distributed dataset (RDD), which is a fault-tolerant collection of elements that can be operated on in parallel
+There are two ways to create RDDs: parallelizing an existing collection in your driver program, or referencing a dataset in an external storage system, such as a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat.
+
+
+Resilient Distributed Data
+
+Resilient Distributed Datasets (RDDs)
+
+The Resilient Distributed Dataset is a concept at the heart of Spark. It is designed to support in-memory data storage, distributed across a cluster in a manner that is demonstrably both fault-tolerant and efficient. Fault-tolerance is achieved, in part, by tracking the lineage of transformations applied to coarse-grained sets of data. Efficiency is achieved through parallelization of processing across multiple nodes in the cluster, and minimization of data replication between those nodes. Once data is loaded into an RDD, two basic types of operation can be carried out:
+
+Transformations, which create a new RDD by changing the original through processes such as mapping, filtering, and more;
+Actions, such as counts, which measure but do not change the original data.
+The original RDD remains unchanged throughout. The chain of transformations from RDD1 to RDDn are logged, and can be repeated in the event of data loss or the failure of a cluster node.
+
+Transformations are said to be lazily evaluated, meaning that they are not executed until a subsequent action has a need for the result. This will normally improve performance, as it can avoid the need to process data unnecessarily. It can also, in certain circumstances, introduce processing bottlenecks that cause applications to stall while waiting for a processing action to conclude.
+
+Where possible, these RDDs remain in memory, greatly increasing the performance of the cluster, particularly in use cases with a requirement for iterative queries or processes.
+
+
+
+
+
+
+
+
+Resilient Distributed Datasets (RDD) is a fundamental data structure of Spark. It is an immutable distributed collection of objects. Each dataset in RDD is divided into logical partitions, which may be computed on different nodes of the cluster. RDDs can contain any type of Python, Java, or Scala objects, including user-defined classes.
+
+Formally, an RDD is a read-only, partitioned collection of records. RDDs can be created through deterministic operations on either data on stable storage or other RDDs. RDD is a fault-tolerant collection of elements that can be operated on in parallel.
+
+There are two ways to create RDDs − parallelizing an existing collection in your driver program, or referencing a dataset in an external storage system, such as a shared file system, HDFS, HBase, or any data source offering a Hadoop Input Format.
+
+
+
+Data Sharing is Slow in MapReduce
+MapReduce is widely adopted for processing and generating large datasets with a parallel, distributed algorithm on a cluster. It allows users to write parallel computations, using a set of high-level operators, without having to worry about work distribution and fault tolerance.
+
+Unfortunately, in most current frameworks, the only way to reuse data between computations (Ex − between two MapReduce jobs) is to write it to an external stable storage system (Ex − HDFS). Although this framework provides numerous abstractions for accessing a cluster’s computational resources, users still want more.
+
+Both Iterative and Interactive applications require faster data sharing across parallel jobs. Data sharing is slow in MapReduce due to replication, serialization, and disk IO. Regarding storage system, most of the Hadoop applications, they spend more than 90% of the time doing HDFS read-write operations.
+
+
+
+**Iterative Operations on MapReduce
+**Interactive Operations on MapReduce
+
+**Data Sharing using Spark RDD
+Data sharing is slow in MapReduce due to replication, serialization, and disk IO. Most of the Hadoop applications, they spend more than 90% of the time doing HDFS read-write operations.
+
+Recognizing this problem, researchers developed a specialized framework called Apache Spark. The key idea of spark is Resilient Distributed Datasets (RDD); it supports in-memory processing computation. This means, it stores the state of memory as an object across the jobs and the object is sharable between those jobs. Data sharing in memory is 10 to 100 times faster than network and Disk.
+
+
+**Iterative Operations on Spark RDD
+It will store intermediate results in a distributed memory instead of Stable storage (Disk) and make the system faster.
+Note − If the Distributed memory (RAM) is not sufficient to store intermediate results (State of the JOB), then it will store those results on the disk.
+
+**Interactive Operations on Spark RDD
+By default, each transformed RDD may be recomputed each time you run an action on it. However, you may also persist an RDD in memory, in which case Spark will keep the elements around on the cluster for much faster access, the next time you query it. There is also support for persisting RDDs on disk, or replicated across multiple nodes.
+
+
+
+RDD from Parallelized Collection
+sc.parallelize()
+
+RDD from External Dataset:-
+Spark can create distributed datasets from any storage source supported by Hadoop, including your local file system, HDFS, Cassandra, HBase, Amazon S3, etc. Spark supports text files, SequenceFiles, and any other Hadoop InputFormat.
+
+sc.textFile(URI[local file syste, hdfs://, s3a://, ]) -> For RDD from text files.
+Method reads the files as a collection of lines.
+
+
+
+	1. All of Spark’s file-based input methods, including textFile, support running on directories, compressed files, and wildcards as well. For example, you can use textFile("/my/directory"), textFile("/my/directory/*.txt"), and textFile("/my/directory/*.gz").
+
+	2. The textFile method also takes an optional second argument for controlling the number of partitions of the file. By default, Spark creates one partition for each block of the file (blocks being 128MB by default in HDFS), but you can also ask for a higher number of partitions by passing a larger value. Note that you cannot have fewer partitions than blocks.
+
+	3. If using a path on the local filesystem, the file must also be accessible at the same path on worker nodes. Either copy the file to all workers or use a network-mounted shared file system.
+	-- Why copy is needed on all workers?
+
+	sc.textFile -> Return one records each line of each file
+	sc.sequenceFile -> 
+
+	RDD.saveAsObjectFile and SparkContext.objectFile support saving an RDD in a simple format consisting of serialized Java objects. While this is not as efficient as specialized formats like Avro, it offers an easy way to save any RDD.
+
+
+	SparkContext.hadoopRDD
+	SparkContext.newAPIHadoopRDD -> for InputFormats based on the “new” MapReduce API (org.apache.hadoop.mapreduce)
+
+
+
+RDD Operations:-
+Transformations:- Which create a new RDD from an existing one
+Actions:- Which return a value to the Driver Program after running a computation on the dataset.
+
+
+map -> A transformation, that passes each dataset element through a function and returns a new RDD representing the results
+reduce -> An action which that aggregates all the elements of the RDD using some function and returns the final result to the driver program
+reduceByKey -> return an RDD
+
+
+Transformation are lazy. The transformations are only computed when an action requires a result to be returned to the driver program.
+
+
+By default, each transformed RDD may be recomputed each time you run an action on it. 
+However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. 
+There is also support for persisting RDDs on disk, or replicated across multiple nodes.
+
+
+
+Example:-
+	val lines = sc.textFile("data.txt")
+	val lineLengths = lines.map(s => s.length)
+	val totalLength = lineLengths.reduce((a, b) => a + b)
+
+	1. The first line defines a base RDD from an external file. This dataset is not loaded in memory or otherwise acted on: lines is merely a pointer to the file. 
+	2. The second line defines lineLengths as the result of a map transformation. Again, lineLengths is not immediately computed, due to laziness. 
+	3. Finally, we run reduce, which is an action. 
+	At this point Spark breaks the computation into tasks to run on separate machines, and each machine runs both its part of the map and a local reduction, returning only its answer to the driver program.
+
+
+	If we also wanted to use lineLengths again later, we could add:
+
+	lineLengths.persist()
+	before the reduce, which would cause lineLengths to be saved in memory after the first time it is computed.
+
+
+

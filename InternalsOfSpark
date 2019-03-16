@@ -1,0 +1,19 @@
+https://www.youtube.com/watch?v=dmL0N3qfSc8
+
+
+Three Components:
+1) Execution Model
+2) The Shuggle
+3) Caching 
+
+
+Execution Model:
+1) A cyclic graph of RDD is created to represent computation
+2) A logic Execution plan for DAG - how to execute the DAG efficiently
+3) Schedule and execute individual tasks
+
+
+
+Compression of data can be done in In-Memory too.
+
+If instermediatory data needs to stored in disk bettwe to serealize it, as it takes less amount of space.

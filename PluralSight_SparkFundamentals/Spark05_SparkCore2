@@ -1,0 +1,161 @@
+Spark Core 2
+
+Implicit Conversion in Scala
+
+
+ 
+case class IntExtensions(value: Int) {
+	def plus(operand: Int) = value + operand
+}
+
+IntExtensions(1).plus(1)
+
+import scala.language,implicitConversions
+
+implicit def intToIntExtensions(value: Int) = {
+	IntExtensions(value)
+}
+
+1.plus(2)
+
+-- Whats hapenning here is that the call to plus fails on the first round of compilataion (as Int object doesn't have a plus method), however it then begins to search for implicits that will make this call compile.
+
+For the implicit metods, the compiler checks for input data type, and the output data type.
+If successfull, it wraps our method behind the scene, allowinf the comiler to finish.
+
+ 
+
+In Spark, a number of methods are made implicitly available via these implicit
+
+
+
+
+Pairs: __________________________________________
+
+Pair -> means tuple of two.
+
+Pair RDD optimization includes 
+-- Hash Partitioner
+-- When partitioning the data, all rows with the similar keys of data will be kept on the same node, which will has the benifit of future key based operations that will execute locally without having to shuffle data across the network.
+
+
+
+.collectAsMap
+.collectAsKeys
+.collectAsValues
+.collectAsLookup
+
+.mapValues
+.flatMapValues
+.reduceByKey  -> a tranformation (not a action, while .reduce is an action). This is because as we are only computing the values and each key data is only on the same machine then the reduction can be done locally, withoug having to pull back to the driver.
+
+.reducedByKeyLocally
+
+
+.foldByKey  -> transformation
+.aggragateByKey -> transformation
+.combinedByKey 
+
+.grpupByKey
+.groupBy followed by reduce -> Is not optimal, and instead use a aggregate mathod
+
+.countByKye
+.countApproxDistinctByKey
+.sampleByKey
+.subtractByKey
+.sortByKys
+
+
+SQL Like Pairings:-
+
+join (inner join)
+fullOuterJoin (left, right) + (left, NULL) + (NULL, right)
+leftJoin
+rightJoin
+cogroup/groupWith  <- both are same method
+
+
+Pair Saving:-
+
+.saveAs(NewAPI)HadoopFile
+.saveAs(NewAPI)HadoopDataSet -> conf
+.saveAsSequenceFile 
+
+
+
+
+Cache: __________________________________________
+
+To store intermediate data in memory, while keeping it distributed, that allows it to boast it the possibility of 100X performance gain over Hadoop.
+
+Most useful in scenarios such as iterative algorithm, such a common Machine Learning.
+Also as means to quickly experiment data in shell.
+
+.cache/.persist -> Just like a tranformation, and nothing will be actually cached till an action is performed. How ever unlike transformation methos this returns the RDD back, instead of a new one. 
+
+Different Level of Caching:-
+Default is to store data in Memory
+
+Will help if there is some different DAG branch from a RDD. Instead of calculating the RDD from beginning, it will now use the cached version.
+
+*** Q. But isn't it should be by default? I mean as if the DAG already knows that there is a branch, why does it not chached the RDD itself?
+
+
+.cached
+.persists -> Also accepts a parameter of the level of storage to use.
+	-- MEMORY_ONLY
+	-- MEMORY_AND_DISK (Memory overflow to disk)
+	-- DISK_ONLY
+	-- MEMORY_ONLY_SER -> So that the stored data would be serialized. This will take a seriliazation performance hit, in favour of a smaller size.
+	-- MEMORY_AND_DISK_SER
+	-- All of the options can be appended with '_2' so that the data is replicated to another Worker. 
+    -- OFF_HELP -> Stores the data in memory, off the JVM heap. (but experimental)
+
+.unpersist -> To clear the cache. If called with default value/empty parameters, it will default to blocking the execution thread, untill the meory is actually cleared. 
+But this call to un persist is not required as the cache should clear itself once the RDD falls out of scope. Or will be evicted by a more recent RDD due to its defaulting to LRU eviction strategy.
+
+If an RDD is called with persist upon, then its caching level canned be changed without calling a un-persist.
+
+
+
+
+
+
+Accumulator: ____________________________________
+
+Accumulator -> shared variables to be used across the cluster.
+Another type of shared variable -> Broadcast. 
+
+sc.accumulator
+
+We can use accumulator to use direct our RDD methods to increment 
+
+rdd.foreach(x => {
+	doSomethingWith(x)
+	accumulator += 1
+})
+
+accumulator.value -> to extract out the final computation.
+This is why the accumulator has to follow the associative principle. The additions can be run independently in each worker. Then they will be accociatively combined on the driver to find the end result.
+
+
+Creation and Reading the accumulator value can only happen on the Driver. While writting to it can only happen on Worker Task.
+Accumulator can only guaranteed to be accurate if used in action methods. This is due to the fault tollerance nature of spark. 
+
+Also if the accumulator is in transformation, then if a action on that RDD never triggers out the accumulator will never computed. 
+
+One common use case is to count the number of errors encountered in execution. 
+
+
+
+Resources: ______________________________________
+
+Official Documentation
+https://spark.apache.org/docs/latest/rdd-programming-guide.html
+
+Python API
+https://www.youtube.com/watch?v=xc7Lc8RA8wE
+
+
+
+

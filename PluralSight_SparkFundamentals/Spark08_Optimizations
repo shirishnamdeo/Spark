@@ -1,0 +1,38 @@
+Spark Optimizations/Troubleshooting 
+
+
+
+Closures: _______________________________________
+
+A closure is a standalone function which contains  atleast one bound variable.
+
+scala> :pa (paste mdoe I believe)
+
+
+Spark is distributed and variable references do not inherently cross node boundries.
+Each partition gets its own copy of the variable. 
+
+
+
+
+
+Broadcasting: ___________________________________
+
+
+
+
+
+Optimiazation: __________________________________
+
+-- Data Skew
+.coalesce -> method for partition reduction.
+
+
+
+
+
+Future of Spark: ________________________________
+
+TACHYON: Reliable, distributed, In-Memory storage system. 
+
+Project Tungsten: Memory and Spark optimizaion in Spark

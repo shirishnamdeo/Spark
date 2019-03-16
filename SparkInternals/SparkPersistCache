@@ -1,0 +1,4 @@
+By default, each transformed RDD may be recomputed each time you run an action on it. 
+However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. 
+There is also support for persisting RDDs on disk, or replicated across multiple nodes.
+
