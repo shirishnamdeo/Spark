@@ -1,0 +1,13 @@
+
+
+// Creation of Spark Session
+val spark = SparkSession
+  .builder()
+  .appName("Spark SQL basic example")
+  .config("spark.some.config.option", "some-value")
+  .getOrCreate()
+
+
+SparkSession in Spark 2.0 provides builtin support for Hive features including the ability to write queries using HiveQL, access to Hive UDFs, and the ability to read data from Hive tables. 
+To use these features, you do not need to have an existing Hive setup.
+

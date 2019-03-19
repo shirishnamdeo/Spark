@@ -1,0 +1,508 @@
+SparkSQL:
+https://spark.apache.org/docs/latest/sql-programming-guide.html
+https://spark.apache.org/docs/latest/sql-getting-started.html
+
+
+SparkSQL Overview
+Dataset
+DataFrame
+Creating DataFrame
+Creating Dataset
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Spark SQL is a Spark module for structured data processing.
+Unlike the basic Spark RDD API, the interfaces provided by Spark SQL provide Spark with more information about the structure of both the data and the computation being performed. 
+-- SQL provide Spark itself with more information about the data.
+
+Internally, Spark SQL uses this extra information to perform extra optimizations.
+
+
+There are several ways to interact with Spark SQL including SQL and the Dataset API. 
+When computing a result the same execution engine is used, independent of which API/language you are using to express the computation.
+This unification means that developers can easily switch back and forth between different APIs based on which provides the most natural way to express a given transformation.
+
+Spark SQL can also be used to read data from an existing Hive installation.
+
+When running SQL from within another programming language the results will be returned as a Dataset/DataFrame.
+You can also interact with the SQL interface using the command-line or over JDBC/ODBC.
+
+
+
+
+
+
+DataSet:
+
+A Dataset is a distributed collection of data. 
+Dataset is a new interface added in Spark 1.6 that provides the benefits of RDDs (strong typing, ability to use powerful lambda functions) with the benefits of Spark SQL’s optimized execution engine. 
+
+A Dataset can be constructed from JVM objects and then manipulated using functional transformations (map, flatMap, filter, etc.).
+-- Does JVM objects means objects from Scala/Java collections?
+
+
+Dataset API available in Scala and Java. 
+Python does not have the support for the Dataset API. But due to Python’s dynamic nature, many of the benefits of the Dataset API are already available (i.e. you can access the field of a row by name naturally row.columnName).
+
+
+
+
+DataFrame:
+
+A DataFrame is a Dataset organized into named columns.
+It is conceptually equivalent to a table in a relational database or a data frame in R/Python, but with richer optimizations under the hood.
+
+DataFrames can be constructed from a wide array of sources such as: structured data files, tables in Hive, external databases, or existing RDDs.
+
+In Scala and Java, a DataFrame is represented by a Dataset of Rows. ***
+In the Scala API, DataFrame is simply a type alias of Dataset[Row].
+While, in Java API, users need to use Dataset<Row> to represent a DataFrame.
+
+With a SparkSession, applications can create DataFrames from an existing RDD, from a Hive table, or from Spark data sources.
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Creating DataFrames:
+
+DataFrames provide a domain-specific language for structured data manipulation.
+
+In Spark 2.0, DataFrames are just Dataset of Rows in Scala and Java API. These operations are also referred as “untyped transformations” in contrast to “typed transformations” come with strongly typed Scala/Java Datasets.
+
+
+-- Untyped Dataset Operations (aka DataFrame Operations)
+
+import spark.implicits._
+// for implicit conversions like converting RDD into DataFrames
+// This import is needed to use the $-notation
+
+val path = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/people.json"
+
+val df = spark.read.json(path)
+df: org.apache.spark.sql.DataFrame = [age: bigint, name: string]
+-- Note that directly read as a DataFrame.
+
+scala> df.count
+res1: Long = 3
+
+scala> df.collect
+res2: Array[org.apache.spark.sql.Row] = Array([null,Michael], [30,Andy], [19,Justin])
+
+
+
+scala> df.show
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+// Print the schema in a tree format
+scala> df.printSchema()
+root
+ |-- age: long (nullable = true)
+ |-- name: string (nullable = true)
+
+
+
+
+
+scala> df.select("name")
+res7: org.apache.spark.sql.DataFrame = [name: string]
+
+scala> df.select("name").collect()
+res8: Array[org.apache.spark.sql.Row] = Array([Michael], [Andy], [Justin])
+
+scala> df.select("name").show()
++-------+
+|   name|
++-------+
+|Michael|
+|   Andy|
+| Justin|
++-------+
+
+
+
+
+// Select everybody, but increment the age by 1
+scala> df.select($"name", $"age" + 1).show()
++-------+---------+
+|   name|(age + 1)|
++-------+---------+
+|Michael|     null|
+|   Andy|       31|
+| Justin|       20|
++-------+---------+
+
+
+
+
+
+
+// Select people older than 21
+scala> df.select($"age" > 21).show()
++----------+
+|(age > 21)|
++----------+
+|      null|
+|      true|
+|     false|
++----------+
+
+
+
+
+
+scala> df.filter($"age" > 21).show()
++---+----+
+|age|name|
++---+----+
+| 30|Andy|
++---+----+
+
+
+
+
+
+// Count people by age
+scala> df.groupBy("age").count().show()
++----+-----+
+| age|count|
++----+-----+
+|  19|    1|
+|null|    1|
+|  30|    1|
++----+-----+
+
+
+scala> df.groupBy($"age").count().show()
++----+-----+
+| age|count|
++----+-----+
+|  19|    1|
+|null|    1|
+|  30|    1|
++----+-----+
+
+
+
+
+Running SQL Queries Programmatically:
+
+// Register the DataFrame as a SQL temporary view
+df.createOrReplaceTempView("people")
+
+scala> val sqlDF = spark.sql("SELECT * FROM people")
+
+scala> sqlDF.show()
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+
+Global Temporary View:
+
+Temporary views in Spark SQL are session-scoped and will disappear if the session that creates it terminates.
+If you want to have a temporary view that is shared among all sessions and keep alive until the Spark application terminates, you can create a global temporary view. 
+Global temporary view is tied to a system preserved database global_temp, and we must use the qualified name to refer it, e.g. SELECT * FROM global_temp.view1.
+
+
+// Register the DataFrame as a global temporary view
+df.createGlobalTempView("people")
+
+// Global temporary view is tied to a system preserved database `global_temp`
+spark.sql("SELECT * FROM global_temp.people").show()
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+
+
+// Global temporary view is cross-session
+spark.newSession().sql("SELECT * FROM global_temp.people").show()
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Creating DataSets:
+
+Datasets are similar to RDDs, however, instead of using Java serialization or Kryo they use a specialized Encoder to serialize the objects for processing or transmitting over the network. 
+While both encoders and standard serialization are responsible for turning an object into bytes, encoders are code generated dynamically and use a format that allows Spark to perform many operations like filtering, sorting and hashing without deserializing the bytes back into an object.
+
+
+case class Person(name: String, age: Long)
+
+
+// Encoders are created for case classes
+scala> val caseClassDS = Seq(Person("Andy", 32)).toDS()
+caseClassDS: org.apache.spark.sql.Dataset[Person] = [name: string, age: bigint]
+
+scala> caseClassDS.show()
++----+---+
+|name|age|
++----+---+
+|Andy| 32|
++----+---+
+
+
+
+// Encoders for most common types are automatically provided by importing spark.implicits._
+val primitiveDS = Seq(1, 2, 3).toDS()
+primitiveDS: org.apache.spark.sql.Dataset[Int] = [value: int]
+
+scala> primitiveDS.map(_ + 1).collect()
+res23: Array[Int] = Array(2, 3, 4)
+
+scala> primitiveDS.map(_ + 1).show()
++-----+
+|value|
++-----+
+|    2|
+|    3|
+|    4|
++-----+
+
+
+
+
+// DataFrames can be converted to a Dataset by providing a class. Mapping will be done by name
+val path = "examples/src/main/resources/people.json"
+
+scala> val peopleDS = spark.read.json(path).as[Person]
+peopleDS: org.apache.spark.sql.Dataset[Person] = [age: bigint, name: string]
+
+scala> peopleDS.show()
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Interoperating with RDDs
+
+Spark SQL supports two different methods for converting existing RDDs into Datasets.
+1. 	The first method uses reflection to infer the schema of an RDD that contains specific types of objects. 
+    This reflection-based approach leads to more concise code and works well when you already know the schema while writing your Spark application.
+
+2. The second method for creating Datasets is through a programmatic interface that allows you to construct a schema and then apply it to an existing RDD. 
+   While this method is more verbose, it allows you to construct Datasets when the columns and their types are not known until runtime.
+
+
+
+Inferring the Schema Using Reflection:
+
+
+// For implicit conversions from RDDs to DataFrames
+import spark.implicits._
+
+case class Person(name: String, age: Long)
+
+
+val path = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/people.txt"
+val ds = spark.read.textFile(path)
+ds: org.apache.spark.sql.Dataset[String] = [value: string]
+-- Note that this is read directly into DataSet
+
+scala> spark.read.textFile(path).collect()
+res12: Array[String] = Array(Michael, 29, Andy, 30, Justin, 19)
+
+
+
+scala> spark.sparkContext
+res4: org.apache.spark.SparkContext = org.apache.spark.SparkContext@12db2921
+-- Spark Context is available as above.
+
+
+scala> spark.sparkContext.textFile(path)
+res5: org.apache.spark.rdd.RDD[String] = file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/people.txt MapPartitionsRDD[3] at textFile at <console>:26
+-- Not this is an RDD
+
+scala> spark.sparkContext.textFile(path).map(_.split(",")).collect()
+res15: Array[Array[String]] = Array(Array(Michael, " 29"), Array(Andy, " 30"), Array(Justin, " 19"))
+
+
+scala> spark.sparkContext.textFile(path).map(_.split(",")).map(attributes => Person(attributes(0), attributes(1).trim.toInt)).collect()
+res18: Array[Person] = Array(Person(Michael,29), Person(Andy,30), Person(Justin,19))
+
+
+scala> spark.sparkContext.textFile(path).map(_.split(",")).map(attributes => Person(attributes(0), attributes(1).trim.toInt)).toDF()
+res20: org.apache.spark.sql.DataFrame = [name: string, age: bigint]
+
+
+scala> spark.sparkContext.textFile(path).map(_.split(",")).map(attributes => Person(attributes(0), attributes(1).trim.toInt)).toDF().show()
++-------+---+
+|   name|age|
++-------+---+
+|Michael| 29|
+|   Andy| 30|
+| Justin| 19|
++-------+---+
+
+
+
+
+scala> val peopleDF = spark.sparkContext.textFile(path).map(_.split(",")).map(attributes => Person(attributes(0), attributes(1).trim.toInt)).toDF()
+peopleDF: org.apache.spark.sql.DataFrame = [name: string, age: bigint]
+
+
+
+scala> peopleDF.createOrReplaceTempView("people")
+scala> val teenagersDF = spark.sql("SELECT name, age FROM people WHERE age BETWEEN 13 AND 19")
+
+
+// The columns of a row in the result can be accessed by field index
+scala> teenagersDF.map(teenager => "Name: " + teenager(0)).show()
++------------+
+|       value|
++------------+
+|Name: Justin|
++------------+
+
+
+// or by field name
+scala> teenagersDF.map(teenager => "Name: " + teenager.getAs[String]("name")).show()
++------------+
+|       value|
++------------+
+|Name: Justin|
++------------+
+
+
+
+
+
+
+
+Programmatically Specifying the Schema
+
+
+When case classes cannot be defined ahead of time, a DataFrame can be created programmatically with three steps.
+
+	Create an RDD of Rows from the original RDD;
+	Create the schema represented by a StructType matching the structure of Rows in the RDD created in Step 1.
+	Apply the schema to the RDD of Rows via createDataFrame method provided by SparkSession.
+
+
+import org.apache.spark.sql.types._
+
+val peopleRDD = spark.sparkContext.textFile(path)
+
+
+// The schema is encoded in a string
+scala> val schemaString = "name age"
+schemaString: String = name age
+
+scala> schemaString.split(",")
+res26: Array[String] = Array(name age)
+
+scala> schemaString.split(",").map(fieldName => StructField(fieldName, StringType, nullable = true))
+res28: Array[org.apache.spark.sql.types.StructField] = Array(StructField(name age,StringType,true))
+
+
+// Generate the schema based on the string of schema
+scala> val fields = schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, nullable = true))
+fields: Array[org.apache.spark.sql.types.StructField] = Array(StructField(name,StringType,true), StructField(age,StringType,true))
+
+
+scala> val schema = StructType(fields)
+schema: org.apache.spark.sql.types.StructType = StructType(StructField(name,StringType,true), StructField(age,StringType,true))
+
+
+
+
+// Convert records of the RDD (people) to Rows
+scala> import org.apache.spark.sql.Row
+import org.apache.spark.sql.Row
+
+scala> val rowRDD = peopleRDD.map(_.split(",")).map(attributes => Row(attributes(0), attributes(1).trim))
+rowRDD: org.apache.spark.rdd.RDD[org.apache.spark.sql.Row] = MapPartitionsRDD[65] at map at <console>:32
+
+scala> rowRDD.collect()
+res33: Array[org.apache.spark.sql.Row] = Array([Michael,29], [Andy,30], [Justin,19])
+
+
+// Apply the schema to the RDD
+scala> val peopleDF = spark.createDataFrame(rowRDD, schema)
+peopleDF: org.apache.spark.sql.DataFrame = [name: string, age: string]
+
+
+scala> peopleDF.createOrReplaceTempView("people")
+
+scala> val results = spark.sql("SELECT name FROM people")
+results: org.apache.spark.sql.DataFrame = [name: string]
+
+scala> results.map(attributes => "Name: " + attributes(0)).show()
++-------------+
+|        value|
++-------------+
+|Name: Michael|
+|   Name: Andy|
+| Name: Justin|
++-------------+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Aggregations
+
+
+The built-in DataFrames functions provide common aggregations such as count(), countDistinct(), avg(), max(), min(), etc. 
+While those functions are designed for DataFrames, Spark SQL also has type-safe versions for some of them in Scala and Java to work with strongly typed Datasets. 
+Moreover, users are not limited to the predefined aggregate functions and can create their own.
+
+
+import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.expressions.MutableAggregationBuffer
+import org.apache.spark.sql.expressions.UserDefinedAggregateFunction
+import org.apache.spark.sql.types._
+
+
+
+Untyped User-Defined Aggregate Functions:
+
+Type-Safe User-Defined Aggregate Functions:
+
+
+
+
+

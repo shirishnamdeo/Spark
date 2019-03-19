@@ -1,0 +1,117 @@
+Spark SQL - Data Sources
+
+Spark SQL supports operating on a variety of data sources through the DataFrame interface. 
+A DataFrame can be operated on using relational transformations and can also be used to create a temporary view. 
+Registering a DataFrame as a temporary view allows you to run SQL queries over its data.
+
+
+Generic Load/Save Functions:
+
+ the simplest form, the default data source (parquet unless otherwise configured by spark.sql.sources.default) will be used for all operations.
+
+val path = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/users.parquet"
+
+val path_save_parquet = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/name_age.parquet"
+
+-- Reading Parquet File
+scala> val userDF = spark.read.load(path)
+res38: org.apache.spark.sql.DataFrame = [name: string, favorite_color: string ... 1 more field]
+
+
+usersDF.show()
+userDF.collect()
+usersDF.count()
+
+userDF.select("favorite_color").show()
+userDF.select("name", "favorite_color").show()
+
+userDF.select("name", "favorite_color").write.save("path_save_parquet")   -- 
+userDF.select("name", "favorite_color").write.format("parquet").save(path_save_parquet)
+
+
+val peopleDF = spark.read.format("json").load()
+
+
+-- Data sources are specified by their fully qualified name (i.e., org.apache.spark.sql.parquet), but for built-in sources you can also use their short names (json, parquet, jdbc, orc, libsvm, csv, text).
+
+
+
+
+val peopleDFCsv = spark.read.format("csv")
+  .option("sep", ";")
+  .option("inferSchema", "true")
+  .option("header", "true")
+  .load("examples/src/main/resources/people.csv")
+
+
+usersDF.write.format("orc")
+  .option("orc.bloom.filter.columns", "favorite_color")
+  .option("orc.dictionary.key.threshold", "1.0")
+  .save("users_with_options.orc")
+
+
+ORC data source ???
+
+
+
+
+
+
+
+
+
+Run SQL on files directl:
+Instead of using read API to load a file into DataFrame and query it, you can also query that file directly with SQL.
+
+
+val sqlDF = spark.sql("SELECT * FROM parquet.`examples/src/main/resources/users.parquet`")
+
+
+
+
+Save Modes
+Save operations can optionally take a SaveMode, that specifies how to handle existing data if present.
+
+SaveMode.ErrorIfExists (default)
+SaveMode.Append	
+SaveMode.Overwrite
+SaveMode.Ignore
+
+
+
+
+Saving to Persistent Tables
+DataFrames can also be saved as persistent tables into Hive metastore using the saveAsTable command.
+
+df.write.option("path", "/some/path").saveAsTable("t")
+-- Option to specify the path too for the table as in External Table in Hive
+
+
+Starting from Spark 2.1, persistent datasource tables have per-partition metadata stored in the Hive metastore. This brings several benefits:
+	Since the metastore can return only necessary partitions for a query, discovering all the partitions on the first query to the table is no longer needed.
+
+Note that partition information is not gathered by default when creating external datasource tables (those with a path option). 
+To sync the partition information in the metastore, you can invoke MSCK REPAIR TABLE.
+
+
+
+
+Bucketing, Sorting and Partitioning
+For file-based data source, it is also possible to bucket and sort or partition the output. Bucketing and sorting are applicable only to persistent tables:
+
+
+peopleDF.write.bucketBy(42, "name").sortBy("age").saveAsTable("people_bucketed")
+
+usersDF.write.partitionBy("favorite_color").format("parquet").save("namesPartByColor.parquet")
+
+
+usersDF
+  .write
+  .partitionBy("favorite_color")
+  .bucketBy(42, "name")
+  .saveAsTable("users_partitioned_bucketed")
+
+
+*** partitionBy creates a directory structure as described in the Partition Discovery section. Thus, it has limited applicability to columns with high cardinality. In contrast bucketBy distributes data across a fixed number of buckets and can be used when a number of unique values is unbounded.
+
+

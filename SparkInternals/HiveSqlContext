@@ -1,0 +1,17 @@
+import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.SqlContext	
+
+import org.apache.spark.api.java.JavaSparkContext;
+
+var hiveContext = new HiveContext(JavaSparkContext.toSparkContext(sc))
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+
+
+HiveContext is the super-set of Sql Context.
+HiveContext can use window function, OVER(PARTITION BY)
+
+sqlContext available in spark-shell is a hiveContext by default.
+
+
+Obviously if you want to work with Hive you have to use HiveContext. Beyond that the biggest difference as for now (Spark 1.5) is a support for window functions and ability to access Hive UDFs.
+
