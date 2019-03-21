@@ -1,0 +1,37 @@
+Spark Structured Streaming
+
+Structured Streaming is a scalable and fault-tolerant stream processing engine built on the Spark SQL engine. [Why on SQL engine??]
+You can express your streaming computation the same way you would express a batch computation on static data.
+The Spark SQL engine will take care of running it incrementally and continuously and updating the final result as streaming data continues to arrive.
+
+You can use the Dataset/DataFrame API in Scala, Java, Python or R to express streaming aggregations, event-time windows, stream-to-batch joins, etc.
+** Q. Does RDD's supported?
+
+The computation is executed on the same optimized Spark SQL engine.
+Finally, the system ensures end-to-end exactly-once fault-tolerance guarantees through checkpointing and Write-Ahead Logs.
+
+Structured Streaming provides fast, scalable, fault-tolerant, end-to-end exactly-once stream processing without the user having to reason about streaming.
+
+
+Internally -> Micro Bacthes (Data Stream as micro-batch jobs, with latency as low as 100 mili-seconds)
+
+However, since Spark 2.3, we have introduced a new low-latency processing mode called Continuous Processing, which can achieve end-to-end latencies as low as 1 millisecond with at-least-once guarantees.
+
+
+
+
+
+
+
+
+Apache Spark 2.0 laid the foundational steps for a new higher-level API, Structured Streaming, for building continuous applications. 
+[A streaming model that supports end-to-end applications that continuously react to data in real-time, We call them continuous applications that react to data in real-time.]
+Apache Spark 2.1 extended support for data sources and data sinks, and buttressed streaming operations, including event-time processing watermarking, and checkpointing
+
+
+
+Central to Structured Streaming is the notion that you treat a stream of data not as a stream but as an unbounded table. As new data arrives from the stream, new rows of DataFrames are appended to an unbounded table.
+
+
+
+DStream (Discretized Stream) is the basic abstraction of Spark Streaming.

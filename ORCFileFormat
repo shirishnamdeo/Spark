@@ -1,0 +1,33 @@
+ORCFileFormat (Internals):
+
+Optimized Row Columnar File System
+
+-- Initially developed by Horton Works for Hive 
+
+-- Hive has Vectorized ORC Reader, which acknowledge the indices.
+
+-- ORC always produces a single output file out of each task, and thus reduces the load of NameNode.
+
+
+
+ORC file componets:
+	Stripes
+		-- Default size 250 MB
+		-- Large stripes sizes enable large, efficient reads from HDFS
+
+		Stripes Cotains:
+			Index Data - Contains Min, Max values of each column, and row position of each column
+			Row Data - is the data for the indexed rows
+			Stripes Footer
+
+
+	File Footer
+		-- Metadata of Stripes, like 
+			list of Stripes in file
+			no of rows per stripe
+			each column's data type,
+			Column Level aggregates Count (of number of rows in a particular stripe)
+
+	Postscript
+		-- holds compression parameters 
+

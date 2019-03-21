@@ -1,0 +1,35 @@
+
+Apache Parquet (Internals):
+
+Columnar Storage
+Data of Column is stored together one after another. 
+
+When we have billions of rows of data, the data in its physical form is stored in lots of files (not just a single file).
+Why these multiple files are generated?
+
+There can be many Parquet files stored for a given table.
+
+
+Within a given parquet file, there are three concepts:-
+	Block Size (this block size it NOT same as of HDFS, default parquet block size if 128 MB)
+		-- Blokc size dictates how large a parquet file can be
+		-- parquet.block.size
+
+	Row Group
+		-- Within a Row Group can have multiple columns (Column Family?)
+
+
+	Page
+		-- Lowest level which stores the data itself
+
+
+-- Higher Row Group size and Block Size improves the Read Performance but affects the write operations (consumes a lot of memory).
+
+
+$ parquet-tools [tool to work with parquet files] 
+
+$ parquet-tools schema file.parquet
+$ parquet-tools head   file.parquet
+$ parquet-tools meta   file.parquet  [Give into about Encoding, Compression, Compression Ratio, Size etc on each field]
+$ parquet-tools dump   file.parquet  [Can see that column are stored together]
+
