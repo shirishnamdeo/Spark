@@ -123,5 +123,112 @@ These underlying RDD transformations are computed by the Spark engine
 
 Input DStreams and Receivers:
 
+Input DStreams are DStreams representing the stream of input data received from streaming sources.
+Every input DStream (except file stream) is associated with a Receiver object which receives the data from a source and stores it in Spark’s memory for processing.
 
 
+Spark Streaming provides two categories of built-in streaming sources.
+	Basic sources: 
+		Sources directly available in the StreamingContext API. Examples: file systems, and socket connections.
+	
+	Advanced sources: 
+		Sources like Kafka, Flume, Kinesis, etc. are available through extra utility classes. 
+		These require linking against extra dependencies as discussed in the linking section.
+
+
+
+Note that, if you want to receive multiple streams of data in parallel in your streaming application, you can create multiple input DStreams (discussed further in the Performance Tuning section). 
+This will create multiple receivers which will simultaneously receive multiple data streams. 
+But note that a Spark worker/executor is a long-running task, hence it occupies one of the cores allocated to the Spark Streaming application. 
+
+Therefore, it is important to remember that a Spark Streaming application needs to be allocated enough cores (or threads, if running locally) to process the received data, as well as to run the receiver(s).
+
+
+
+Note **
+When running a Spark Streaming program locally, do not use “local” or “local[1]” as the master URL. 
+Either of these means that only one thread will be used for running tasks locally. 
+If you are using an input DStream based on a receiver (e.g. sockets, Kafka, Flume, etc.), then the single thread will be used to run the receiver, leaving no thread for processing the received data. 
+Hence, when running locally, always use “local[n]” as the master URL, where n > number of receivers to ru
+
+
+Extending the logic to running on a cluster, the number of cores allocated to the Spark Streaming application must be more than the number of receivers. 
+Otherwise the system will receive data, but not be able to process it.
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Streaming Sources
+
+	Socket Source
+		--  ssc.socketTextStream(...)
+	
+	File Stream
+		For text file:
+			streamingContext.textFileStream(dataDirectory)
+
+		For reading data from files on any file system compatible with the HDFS API (that is, HDFS, S3, NFS, etc.), a DStream can be created as via 
+		StreamingContext.fileStream[KeyClass, ValueClass, InputFormatClass]
+
+		--  File streams do not require running a receiver so there is no need to allocate any cores for receiving file data.
+
+
+	Queue of RDDs as a Stream
+		For testing a Spark Streaming application with test data, one can also create a DStream based on a queue of RDDs, using streamingContext.queueStream(queueOfRDDs). Each RDD pushed into the queue will be treated as a batch of data in the DStream, and processed like a stream.
+
+Advanced Sources
+	Kafka
+	Flume
+	Kinesis
+
+Note that these advanced sources are not available in the Spark shell, hence applications based on these advanced sources cannot be tested in the shell. If you really want to use them in the Spark shell you will have to download the corresponding Maven artifact’s JAR along with its dependencies and add it to the classpath.	
+
+
+->  Custom Sources
+
+
+
+Receiver Reliability
+
+There can be two kinds of data sources based on their reliability. Sources (like Kafka and Flume) allow the transferred data to be acknowledged. 
+If the system receiving data from these reliable sources acknowledges the received data correctly, it can be ensured that no data will be lost due to any kind of failure.
+
+This leads to two kinds of receivers:
+	Reliable Receiver - A reliable receiver correctly sends acknowledgment to a reliable source when the data has been received and stored in Spark with replication.
+	
+	Unreliable Receiver - An unreliable receiver does not send acknowledgment to a source. This can be used for sources that do not support acknowledgment, or even for reliable sources when one does not want or need to go into the complexity of acknowledgment.
+
+
+Join Operation
+	Stream-stream joins:
+		val stream1: DStream[String, String] = ...
+		val stream2: DStream[String, String] = ...
+		val joinedStream = stream1.join(stream2)
+
+		val windowedStream1 = stream1.window(Seconds(20))
+		val windowedStream2 = stream2.window(Minutes(1))
+		val joinedStream = windowedStream1.join(windowedStream2)
+
+	Stream-dataset joins
+		val dataset: RDD[String, String] = ...
+		val windowedStream = stream.window(Seconds(20))...
+		val joinedStream = windowedStream.transform { rdd => rdd.join(dataset) }
+
+
+Output Operations on DStreams
+	print()
+	saveAsTextFiles(prefix, [suffix]) 
+	saveAsObjectFiles(prefix, [suffix])
+	saveAsHadoopFiles(prefix, [suffix])
+	foreachRDD(func) 
+
+
+
+-> DataFrame and SQL Operations
+-> MLlib Operations
+-> Caching / Persistenc
+-> Checkpointing
+-> Accumulators, Broadcast Variables, and Checkpoints
