@@ -1,0 +1,89 @@
+Example1:
+To maintain the runninf word-count of the text data received on a data server listining on a TCP socket.
+
+
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.SparkSession
+
+import spark.implicits._
+
+
+
+// Create DataFrame representing the stream of input lines from connection to localhost:9999
+val lines = spark.readStream.format("socket").option("host", "localhost").option("port", 9999).load()
+
+-- Created with a Warning that the Socket source should not be used in Production as it does not support recovery.
+-- Lines Dataframe represents unbound table containing the streaming text data.
+-- This table contains one column (only a single column in table) of strings named 'value', and each line in the streaming text data becomes a row in the table.
+
+
+// Split the lines into words
+val words = lines.as[String].flatMap(_.split(" "))
+-- words: org.apache.spark.sql.Dataset[String] = [value: string]
+-- Converts DataFrame to a DataSet of String using .as[String], so that we can apply the flatmap operation to split each line into multiple words.
+-- Resulatnt words dataset contains all the words.
+
+
+
+// Generate running word count
+val wordCounts = words.groupBy("value").count()
+-- wordCounts: org.apache.spark.sql.DataFrame = [value: string, count: bigint]
+-- Finally, we have defined the wordCounts DataFrame by grouping by the unique values in the Dataset and counting them. 
+-- Note that this is a STREAMING DATAFRAME which represents the running word counts of the stream.
+
+
+
+
+-- We have now set up the query on the streaming data. All that is left is to actually start receiving data and computing the counts. 
+-- To do this, we set it up to print the complete set of counts (specified by outputMode("complete")) to the console every time they are updated. 
+-- nd then start the streaming computation using start()
+
+val query = wordCounts.writeStream.outputMode("complete").format("console").start()
+
+-- After this code is executed, the streaming computation will have started in the background. 
+-- The query object is a handle to that active streaming query, and we have decided to wait for the termination of the query using awaitTermination() to prevent the process from exiting while the query is active.
+
+
+->  ./bin/run-example org.apache.spark.examples.sql.streaming.StructuredNetworkWordCount localhost 9999
+-- Can also run the examples using provided code.
+
+
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.SparkSession
+import spark.implicits._
+
+val lines = spark.readStream.format("socket").option("host", "localhost").option("port", 9999).load()
+val words = lines.as[String].flatMap(_.split(" "))
+val wordCounts = words.groupBy("value").count()
+val query = wordCounts.writeStream.outputMode("complete").format("console").start()
+
+
+query.awaitTermination() -- This function is needed in script mode. (Not in Shell mode), to prevent the program to termnate.
+
+-- This code will give an error if the port is not alrady open/working. [Happpend both in Windoes and Linux]
+-- Not absolutely sure how this works, but we need to open 
+
+-- Windows 10
+-- Open a command prompt and use the command
+-- nc -l -p 9999
+-- And then trigget the spark lisening command on shell
+-- Then Everytime you type something on the nc command windoes a spark execution will trigget automatically.
+-- When runnign a Virtual VM side-by-side, the spark execution takes a lot of time but is working.
+-- ** Even after closign the VM, Spark is slow. 
+
+-- Linux
+-- Open Linux and 
+-- nc -l -p 9999 [nc -lk 9999 also works]
+-- then execute the Spark execution command. Works quickly on VM.
+
+
+-- So every time we enter a line in netcat SERVER, it triggers a spark execution (essentially it must be a time out/ micro batch triggered execution)
+
+
+
+Programming Flow:
+
+The first lines DataFrame is the input table, and the final wordCounts DataFrame is the result table. 
+Note that the query on streaming lines DataFrame to generate wordCounts is exactly the same as it would be a static DataFrame. 
+However, when this query is started, Spark will continuously check for new data from the socket connection. 
+If there is new data, Spark will run an 'incremental' query that combines the previous running counts with the new data to compute updated counts.

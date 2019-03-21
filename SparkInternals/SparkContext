@@ -1,7 +1,108 @@
 SparkContext:
 
-Main entry point for Spark functionality. A SparkContext represents the connection to a Spark cluster, and can be used to create RDDs, accumulators and broadcast variables on that cluster.
-Only one SparkContext may be active per JVM. You must stop() the active SparkContext before creating a new one. This limitation may eventually be removed; see SPARK-2243 for more details.
+	SparkContext is a conduit to access all Spark functionalit.
+	Only one SparkContext may be active per JVM. 
+	-- You must stop() the active SparkContext before creating a new one. This limitation may eventually be removed; see SPARK-2243 for more details.
 
-The first thing a Spark program must do is to create a SparkContext object, which tells Spark how to access a cluster. 
-To create a SparkContext you first need to build a SparkConf object that contains information about your application.
+	The Spark driver program uses it to connect to the cluster manager to communicate, and submit Spark job.
+	Main entry point for Spark functionality. A SparkContext represents the connection to a Spark cluster, and can be used to create RDDs, accumulators and broadcast variables on that cluster.
+	
+	It allows you to programmatically adjust Spark configuration parameters.
+	And through SparkContext, the driver can instantiate other contexts such as SQLContext, HiveContext, and StreamingContext to program Spark.
+
+
+	The first thing a Spark program must do is to create a SparkContext object, which tells Spark how to access a cluster. 
+	SparkConf -- To create a SparkContext you first need to build a SparkConf object that contains information about your application.
+
+
+
+SparkSession:
+	However, with Apache Spark 2.0, SparkSession can access all of Spark’s functionality through a single-unified point of entry. 
+	As well as making it simpler to access Spark functionality, such as DataFrames and Datasets, Catalogues, and Spark Configuration, it also subsumes the underlying contexts to manipulate data. 
+
+
+
+
+Spark Web UI:
+	https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-webui.html
+
+	Every time you create a SparkContext in a Spark application you also launch an instance of web UI. The web UI is available at http://[driverHostname]:4040
+	The default port can be changed using spark.ui.port configuration property. SparkContext will increase the port if it is already taken until an open port is found.
+	You can use the web UI after the application has finished by persisting events (using EventLoggingListener) and using Spark History Server.
+
+
+
+
+Spark Anatomy:-
+
+
+Spark Cluster:
+	A collection of machines or nodes in the public cloud or on-premise in a private data center on which Spark is installed. 
+	Among those machines are Spark workers, a Spark Master (also a cluster manager in a Standalone mode), and at least one Spark Driver.
+
+
+
+Spark Master:
+	As the name suggests, a Spark Master JVM (-- so it is a process) acts as a cluster manager in a Standalone deployment mode to which Spark workers register themselves as part of a quorum. 
+	Depending on the deployment mode, it acts as a resource manager and decides where and how many Executors to launch, and on what Spark workers in the cluster.
+	-- So it launched executors on Spark Workers.
+
+
+Spark Worker:
+	Upon receiving instructions from Spark Master, the Spark worker JVM launches Executors on the worker on behalf of the Spark Driver. 
+	Spark applications, decomposed into units of tasks, are executed on each worker’s Executor. 
+	In short, the worker’s job is to only launch an Executor on behalf of the master.
+	-- Q. Only one worker per Machine?
+	-- S. Yes, A node is a machine, and there's not a good reason to run more than one worker per machine.
+
+
+Spark Executo:
+	A Spark Executor is a JVM container with an allocated amount of cores and memory on which Spark runs its tasks. 
+	Each worker node launches its own Spark Executor, with a configurable number of cores (or threads). 
+	Besides executing Spark tasks, an Executor also stores and caches all data partitions in its memory. 
+	-- Q. Does only one executor can be launched per Worker Node?
+	---S. No. I believe there can be more than one Executors per Worker Node. [Workers hold many executors, for many applications.]
+	--    If you use Mesos or YARN as your cluster manager, you are able to run multiple executors on the same machine with one worker, thus there is really no need to run multiple workers per machine.
+	--    SPARK_WORKER_INSTANCE Property (spark-env.sh)
+	--    SPARK_WORKER_CORES (to limit the cores per worker, else each worker will try to use all cores)
+
+
+
+Spark Driver:
+	Once it gets information from the Spark Master of all the workers in the cluster and where they are, the driver program distributes Spark tasks to each worker’s Executor.
+	-- Tasks are distributed to Worker's Executor.
+	The driver also receives computed results from each Executor’s tasks.
+
+
+
+
+
+In Spark, the highest-level unit of computation is an application.
+A Spark application can be used for a single batch job, an interactive session with multiple jobs, or a long-lived server continually satisfying requests. 
+Spark application execution involves runtime concepts such as driver, executor, task, job, and stage. 
+
+At runtime, a Spark application maps to a SINGLE DRIVER PROCESS and a set of executor processes distributed across the hosts in a cluster.
+
+The driver process manages the job flow and schedules tasks and is available the entire time the application is running. 
+Typically, this driver process is the same as the client process used to initiate the job, although when run on YARN, the driver can run in the cluster.
+-- In interactive mode, the shell itself is the driver process.
+
+
+The executors are responsible for executing work, in the form of tasks, as well as for storing any data that you cache.
+Executor lifetime depends on whether dynamic allocation is enabled. 
+An executor has a number of slots for running tasks, and will run many concurrently throughout its lifetime.
+
+
+
+In Spark app, if you invoke an action, such as collect() or take() on your DataFrame or Dataset, the action will create a job.
+Spark examines the dataset on which that action depends and formulates an execution plan.
+
+A job will then be decomposed into single or multiple stages.
+The execution plan assembles the dataset transformations into stages.
+
+
+A stage is a collection of tasks that run the same code, each on a different subset of the data.
+Stages are further divided into individual tasks.
+
+Tasks are units of execution that the Spark driver’s scheduler ships to Spark Executors on the Spark worker nodes to execute in your cluster.
+

@@ -1,0 +1,20 @@
+
+MlLib provides:
+
+ML Algorithms: common learning algorithms such as classification, regression, clustering, and collaborative filtering
+Featurization: feature extraction, transformation, dimensionality reduction, and selection
+Pipelines: tools for constructing, evaluating, and tuning ML Pipelines
+Persistence: saving and load algorithms, models, and Pipelines
+Utilities: linear algebra, statistics, data handling, etc.
+
+
+Spark 2.4.0 -> Announcement: DataFrame-based API is primary API.
+(Spark RDD based API is not in maintenance mode and will be depreciated and will be removed in Spark 3.0)
+
+
+RDD API -> 		 org.apache.spark.mllib
+DataFrame API -> org.apache.spark.ml
+
+
+
+
