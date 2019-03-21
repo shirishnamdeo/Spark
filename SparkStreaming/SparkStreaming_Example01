@@ -58,6 +58,10 @@ val wordCounts = words.groupBy("value").count()
 val query = wordCounts.writeStream.outputMode("complete").format("console").start()
 
 
+Note that you have to call start() to actually start the execution of the query. 
+This returns a StreamingQuery object which is a handle to the continuously running execution.
+
+
 query.awaitTermination() -- This function is needed in script mode. (Not in Shell mode), to prevent the program to termnate.
 
 -- This code will give an error if the port is not alrady open/working. [Happpend both in Windoes and Linux]
@@ -87,3 +91,8 @@ The first lines DataFrame is the input table, and the final wordCounts DataFrame
 Note that the query on streaming lines DataFrame to generate wordCounts is exactly the same as it would be a static DataFrame. 
 However, when this query is started, Spark will continuously check for new data from the socket connection. 
 If there is new data, Spark will run an 'incremental' query that combines the previous running counts with the new data to compute updated counts.
+
+
+
+
+
