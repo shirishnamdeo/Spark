@@ -1,0 +1,83 @@
+
+Spark with TensorFlow (with Keras too)
+
+https://www.youtube.com/watch?time_continue=25&v=tx6HyoUYGL0
+
+--  HopsWorks
+
+
+What is Tesla V100 GPU by Nvidia?
+-- It can process 100 images per second, wit the Storage S3 even cannot keep up.
+
+Dynamic Executors -> Release GPU's when training finishes
+BlackListing Executors  -> For Fault-Tolerant Hyper Parameter Opimization
+
+
+
+HopsFS (New Version of HDFS)
+
+
+
+--  Tensorflow code will run inside the executors (we want to run that code on GPU's)
+
+
+Deep Learning Conferrence -> ICLR
+
+Rather than a Data-Scientist finding the Hyper-Parameters by repeated experimentation, we could have run multiple instances to run on GPU/Cores with different values
+and let the computer find those parameters.
+
+
+
+Distributed Hyper-Parameter Optimization:
+GridSearch for Hyper Parameters on HopsML
+
+def train (learning_rate, dropout):
+	[Tensorflow Code here]
+
+
+
+args_dict = {
+		'learning_rate': [0.001, 0.003, 0.01],
+		'dropout'      : [0.5, 0.6]
+}
+
+-- Above will be six possible experiments
+
+experiment.launch(train, args_dict)
+-- This will run six spark tasks, on 6 spark executors each with a GPU, then they all run in Parallel.
+
+Dynamic Executors - Spark will release of the GPU's (GPU's no need to be held by spark application)
+
+
+
+
+
+Distributed Training:
+Distributed Training is more difficult than Distributed Hyper-Parameter Optimization, as it is a Strong-Scaling Problem
+Hyper-Parameter Optimization is Weak-Scaling.
+Strong-Scaling means there will be a lot of communication between the executors while they were doing training. (Basically the Sharing of Gradients)
+
+Main bottleneck in Distributed Training is Network I/O
+
+Example: We could have multiple machines and say 10 GPU's on each Machine.
+
+Distributed Framework
+	--  TensorFlow owns Distributed TensorFlow. (Parameter Server Model)
+	--  Horovod (by UBER)
+	--  HopsML CollectiveAllReducedStrategy
+
+
+
+Right now, feeding Spark DataFrame directly into Distributed Tensorflow Model is not optimal, so recommendation is to write clean data for training into the file-system and then use Tensorflow Model for training.
+UBER's -> PetaStrom (Parquet Data in Tensorflow Model)
+
+
+Apache Airflow Jobs 
+
+
+Model Serving:
+
+
+
+
+

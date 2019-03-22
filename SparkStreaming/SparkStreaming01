@@ -191,6 +191,8 @@ Note that these advanced sources are not available in the Spark shell, hence app
 
 
 
+
+
 Receiver Reliability
 
 There can be two kinds of data sources based on their reliability. Sources (like Kafka and Flume) allow the transferred data to be acknowledged. 
@@ -200,6 +202,19 @@ This leads to two kinds of receivers:
 	Reliable Receiver - A reliable receiver correctly sends acknowledgment to a reliable source when the data has been received and stored in Spark with replication.
 	
 	Unreliable Receiver - An unreliable receiver does not send acknowledgment to a source. This can be used for sources that do not support acknowledgment, or even for reliable sources when one does not want or need to go into the complexity of acknowledgment.
+
+
+
+
+
+
+-> Transformation on DStreams
+	--  .transform() Operation
+
+	--  Window Operation/Computations
+		Apply transformations over sliding window of data
+
+
 
 
 Join Operation
@@ -227,8 +242,26 @@ Output Operations on DStreams
 
 
 
+
+
+
 -> DataFrame and SQL Operations
--> MLlib Operations
+
+
+
+
+-> MLlib Operations:
+	You can also easily use machine learning algorithms provided by MLlib. 
+
+	First of all, there are streaming machine learning algorithms (e.g. Streaming Linear Regression, Streaming KMeans, etc.) which can simultaneously learn from the streaming data as well as apply the model on the streaming data. 
+
+	Beyond these, for a much larger class of machine learning algorithms, you can learn a learning model offline (i.e. using historical data) and then apply the model online on streaming data.
+
+
+
+
+
+
 -> Caching / Persistenc
 -> Checkpointing
 -> Accumulators, Broadcast Variables, and Checkpoints
