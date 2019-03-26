@@ -1,0 +1,63 @@
+Spark Broadcast Variables:
+
+https://blog.knoldus.com/broadcast-variables-in-spark-how-and-when-to-use-them/
+
+
+Spark Broadcast variables are immutable shared variable which are cached on each worker nodes on a Spark cluster.
+
+
+As documentation recites, explicitly creating broadcast variables are only beneficial when tasks across multiple stages need the same data or when caching the data in 
+deserialized form is important.
+
+
+Once we broadcasted the value to the nodes, we shouldn’t make changes to its value to make sure each node have exact same copy of data. The modified value might be sent to another node later that would give unexpected results.
+
+
+Example:
+
+Think of a problem as counting grammar elements for any random English paragraph, document or file. Suppose you have the Map of each word as specific grammar element like:
+	 val dictionary = Map(("man"-> "noun"), ("is"->"verb"),("mortal"->"adjective"))
+
+
+Let us think of a function which returns the count of each grammar element for a given word.
+
+def getElementsCount(word :String, dictionary:Map[String,String]):(String,Int) = {
+	dictionary.filter{ case (wording,wordType) => wording.equals((word))}.map(x => (x._2,1)).headOption.getOrElse(("unknown" -> 1)) //some dummy logic
+}
+
+
+and use this function to count each grammar element for the following data:
+
+val words = sc.parallelize(Array("man","is","mortal","mortal","1234","789","456","is","man")
+val grammarElementCounts = words.map( word => getElementsCount(word,dictionary)).reduceByKey((x,y) => x+y)
+
+Before running each tasks on the available executors, Spark computes the task’s closure. 
+The closure is those variables and methods which must be visible for the executor to perform its computations on the RDD
+
+
+In the above snippet we’ve sent the dictionary as value to function.  This is all right until we are running it locally on single executor. In cluster environment, it will give Spark a huge communication and compute burden when this dictionary will be needed by each executor. Spark automatically broadcasts the common data needed by tasks within each stage. The data broadcasted this way is cached in serialized form and deserialized before running each task/
+
+Supposedly we had a large English dictionary containing each possible word with its grammatical illustration, the cost would have been more as we send it as raw value with closures.
+
+
+Creating Broadcast Variable:
+
+Broadcast variables are wrappers around any value which is to be broadcasted. 
+More specifically they are of type: org.apache.spark.broadcast.Broadcast[T] and can be created by calling:
+	
+	val broadCastDictionary = sc.broadcast(dictionary)
+
+
+The variable broadCastDictionary will be sent to each node only once. 
+The value can be accessed by calling the method .value() on broadcast variables.
+
+	def getElementsCount(word :String, dictionary:org.apache.spark.broadcast.Broadcast[Map[String,String]]):(String,Int) = {
+		dictionary.value.filter{ case (wording,wordType) => wording.equals((word))}.map(x => (x._2,1)).headOption.getOrElse(("unknown" -> 1))
+	}
+
+Instead of sending the raw dictionary we will pass broadCastDictionary with words RDDs.
+
+words.map( word => getElementsCount(word,broadCastDictionary)).reduceByKey((x,y) => x+y)
+
+On collect, the result would be:
+	Array[(String, Int)] = Array((adjective,2), (noun,2), (unknown,3), (verb,2))
