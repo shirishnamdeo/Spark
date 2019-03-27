@@ -1,0 +1,113 @@
+# https://github.com/h2oai/sparkling-water/tree/fa7306000a35e3ed695a087f83be12fbbf1b6431/examples
+
+
+# Initialize H2O services on top of Spark cluster:
+
+import org.apache.spark.h2o._
+val h2oContext = H2OContext.getOrCreate(spark) 
+import h2oContext._ 
+import h2oContext.implicits._
+
+
+
+import org.apache.spark.examples.h2o._
+val weatherDataFile = "file:///D:/SoftwareInstalled/SparklingWater/SparklingWater_2.4/sparkling-water-2.4.8/examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
+
+val wrawdata = spark.sparkContext.textFile(weatherDataFile,3).cache()
+
+scala> wrawdata.count()
+res3: Long = 1462
+
+val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
+
+
+
+
+-- Load airlines data using the H2O parser:
+import java.io.File
+-- val dataFile = "file:///D:/SoftwareInstalled/SparklingWater/SparklingWater_2.4/sparkling-water-2.4.8/examples/smalldata/airlines/allyears2k_headers.zip"  : Somewhat this file name is not working in H2OFrame
+
+val dataFile = "D:/SoftwareInstalled/SparklingWater/SparklingWater_2.4/sparkling-water-2.4.8/examples/smalldata/airlines/allyears2k_headers.zip"
+val airlinesData = new H2OFrame(new File(dataFile))
+airlinesData: water.fvec.H2OFrame =
+Frame key: allyears2k_headers.hex
+   cols: 31
+   rows: 43978
+ chunks: 1
+   size: 2155872
+
+
+
+-- Select flights destined for Chicago (ORD):
+val airlinesTable : RDD[Airlines] = asRDD[Airlines](airlinesData)
+val flightsToORD = airlinesTable.filter(f => f.Dest==Some("ORD"))
+
+
+scala> flightsToORD.count
+res24: Long = 2103
+
+
+
+
+
+-- Use Spark SQL to join the flight data with the weather data:
+implicit val sqlContext = spark.sqlContext
+import sqlContext.implicits._
+
+flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
+weatherTable.toDF.createOrReplaceTempView("WeatherORD")
+
+
+
+
+-- Perform SQL JOIN on both tables:
+val bigTable = sqlContext.sql(
+        """SELECT
+            f.Year,f.Month,f.DayofMonth,
+            f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
+            f.UniqueCarrier,f.FlightNum,f.TailNum,
+            f.Origin,f.Distance,
+            w.TmaxF,w.TminF,w.TmeanF,w.PrcpIn,w.SnowIn,w.CDD,w.HDD,w.GDD,
+            f.ArrDelay
+            FROM FlightsToORD f
+            JOIN WeatherORD w
+            ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day""".stripMargin)
+
+scala> bigTable.count
+res27: Long = 561
+
+
+
+-- Transform the first 3 columns containing date information into enum columns:
+val bigDataFrame: H2OFrame = h2oContext.asH2OFrame(bigTable)
+for( i <- 0 to 2) bigDataFrame.replace(i, bigDataFrame.vec(i).toCategoricalVec)
+bigDataFrame.update()
+
+
+
+-- Run deep learning to produce a model estimating arrival delay:
+import _root_.hex.deeplearning.DeepLearning
+import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+val dlParams = new DeepLearningParameters()
+dlParams._train = bigDataFrame
+dlParams._response_column = "ArrDelay"
+dlParams._epochs = 5
+dlParams._activation = Activation.RectifierWithDropout
+dlParams._hidden = Array[Int](100, 100)
+
+// Create a job
+val dl = new DeepLearning(dlParams)
+val dlModel = dl.trainModel.get
+
+
+
+
+-- Use the model to estimate the delay on the training data:
+val predictionH2OFrame = dlModel.score(bigTable)("predict")                                         --ERROR
+val predictionsFromModel = asDataFrame(predictionH2OFrame)(sqlContext).collect.map{
+    row => if (row.isNullAt(0)) Double.NaN else row(0)
+}
+
+
+

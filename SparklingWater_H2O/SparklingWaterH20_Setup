@@ -1,0 +1,22 @@
+1. Download the binary and Unzip the file.
+
+From C:\Users\Notebook>
+
+spark-shell --jars D:\SoftwareInstalled\SparklingWater\SparklingWater_2.4\sparkling-water-2.4.8\assembly\build\libs\sparkling-water-assembly_2.11-2.4.8-all.jar
+spark-shell --conf "spark.executor.memory=1g" --jars D:\SoftwareInstalled\SparklingWater\SparklingWater_2.4\sparkling-water-2.4.8\assembly\build\libs\sparkling-water-assembly_2.11-2.4.8-all.jar
+
+
+# Initialize H2O services on top of Spark cluster:
+
+import org.apache.spark.h2o._
+val h2oContext = H2OContext.getOrCreate(spark) 
+import h2oContext._ 
+import h2oContext.implicits._
+
+# A H2O Flow URL will open at:
+# http://192.168.56.1:54321/flow/index.html
+
+
+
+import _root_.hex.tree.DTree
+
