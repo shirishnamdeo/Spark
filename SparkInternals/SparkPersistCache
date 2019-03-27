@@ -1,4 +1,50 @@
+
+RDD Persistance:
+One of the most important capabilities in Spark is persisting (or caching) a dataset in memory across operations.
+When you persist an RDD, each node stores any partitions of it that it computes in memory and reuses them in other actions on that dataset (or datasets derived from it).
+This allows future actions to be much faster (often by more than 10x). 
+
+Caching is a key tool for iterative algorithms and fast interactive use.
+
+You can mark an RDD to be persisted using the persist() or cache() methods on it.
+The first time it is computed in an action, it will be kept in memory on the nodes.
+-- Only on the very first triggered action after the persist()/cache() method, the RDD is calculated/created, and all the subsequent call to this RDD will be the persisted one.
+
+
+Fault-Tolerant:
+	Spark’s cache is fault-tolerant – if any partition of an RDD is lost, it will automatically be recomputed using the transformations that originally created it.
+
+
+
 By default, each transformed RDD may be recomputed each time you run an action on it. 
 However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. 
 There is also support for persisting RDDs on disk, or replicated across multiple nodes.
 
+
+
+StorageLevel Object is passed in the persist() method.
+
+RDD..cache() -- Is only for a default storage, with the StorageLevel as StorageLevel.MEMORY_ONLY
+
+
+
+RDD.persist(Storage.<LEVEL>)
+
+Storage Levels:   
+MEMORY_ONLY            -- Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, some partitions will not be cached and will be recomputed on the fly each time they're needed.     
+MEMORY_AND_DISK        -- Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, store the partitions that don't fit on disk, and read them from there when they're needed.
+MEMORY_ONLY_SER        -- Store RDD as serialized Java objects (one byte array per partition). This is generally more space-efficient than deserialized objects, especially when using a fast serializer, but more CPU-intensive to read. 
+MEMORY_AND_DISK_SER    -- Similar to MEMORY_ONLY_SER, but spill partitions that don't fit in memory to disk instead of recomputing them on the fly each time they're needed.
+DISK_ONLY              -- Store the RDD partitions only on disk.
+MEMORY_ONLY_2, MEMORY_AND_DISK_2  -- Same as the levels above, but replicate each partition on two cluster nodes.
+OFF_HEAP               -- Similar to MEMORY_ONLY_SER, but store the data in off-heap memory. This requires off-heap memory to be enabled
+
+
+
+
+Removing Data (LRU Policy)
+Spark automatically monitors cache usage on each node and drops out old data partitions in a least-recently-used (LRU) fashion. 
+If you would like to manually remove an RDD instead of waiting for it to fall out of the cache, use the RDD.unpersist() method. 
+
+
+RDD.unpersist()
