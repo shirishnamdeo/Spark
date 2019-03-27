@@ -20,3 +20,14 @@ import h2oContext.implicits._
 
 import _root_.hex.tree.DTree
 
+
+
+
+h2oContext.openFlow  --Opens up Flow UI
+
+
+
+In H2O-Flow,
+
+getCloud
+getFrames

@@ -1,0 +1,62 @@
+https://www.youtube.com/watch?v=iKtcwBktXoc
+
+
+
+H2O is a Open-Source In-Memory Distributed Machine-Learning Framework/Platform
+
+-- Highly Optimized Java Code (In House H2O)
+-- Distributed In-Memory K-V Store 
+-- H2O has its own DataStructure.
+-- H2O built its own execution engine on top of K-V Store. 
+-- And then on this low level layer, ML libraries are built. These libraries are fully Distributed and Parallelized. (H2O focuced on this part)
+
+
+-- All the functionalities are published via API's (Java API, Scala API, Rest-API which allowed for Python and R interactive UI)
+
+-- H2O can be launched on Standalone(on Laptop, or Cluster), on Hadoop, Yarn, Spark.
+
+
+
+Sparkling-Water:
+Transparent integration of H2O in Spark ecosystem
+Use H2O-Frames and Algorithms - with Spark API
+Excels in existing Spark WorkFlows requiring advance Machine Learning Algorithms
+
+H2O-Frames is the basic unit of data in H2O ??**
+
+H2O-Frames can be converted into Spark RDD/Dataframe and vice-versa.
+
+
+Use Case 1:
+    Load/Transformation/Cleaning by Spark into RDD's/Dataframe and then H2O is used to build model and predictions.
+
+Use Case 2:
+    H2O can also be a Data-Transformation tool. 
+    Load and Parse data directly into H2O-Frame.
+
+    H2O has different execution Model than Spark (H2O doesn't build the execution graph as Spark does)
+    H2O is eager execution and mutable DataStructure. Spark is lazy evaluation.
+
+Use Case 3:
+    First pipeline is Offline Model Training with Spark + H2O
+    Second pipeline is Streaming data (Kafka, Strom, Spark), where H2O model is exported (independent of H2O) to make predictions to incoming events.
+
+
+
+Like Spark-Context, there is a H2O-Context.
+H2O-Context initialize H2O Service, H2O-ExecutionEngine on each executor in Spark Cluster. From here on H2O is sharing JVM with Spark Executors.
+This means H2O can see spark objects, and Spark can see H2O objects.
+
+
+
+Converting H2O-Frame to Spark-DataFrame is pretty easy. H2O creates a small wrapper around H2O-Frame DataStructure which looks like RDD, and Spark is happy.
+
+Converting Spark-DataFrame to H2O-Frame is difficult.
+Right now H2O cannot use the Spark-DataFrame directly.
+No direct conversion is possible (at time of video), so what H2O do is, it reads the data from Spark-DataFrame and transform it into H2O-Frame
+This means a data duplication in memory. But a lot of tricks to minimize memory foot-print, like
+    -- Data Compression on FLY
+    -- A lot of properties are calculated on the fly. 
+
+
+
