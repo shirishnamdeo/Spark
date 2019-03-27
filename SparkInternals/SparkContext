@@ -73,6 +73,17 @@ Spark Driver:
 	-- Tasks are distributed to Worker's Executor.
 	The driver also receives computed results from each Executor’s tasks.
 
+	-- The machine where the Spark application process (the one that creates the SparkContext) is running is the 'Driver' node, with process being called the Driver process.
+	-- There is another machine where the Spark Standalone cluster manager is running, called the "Master" node.  (I believe it only runs in Spark Standalone Mode)
+
+	-- When the Driver process needs resources to run jobs/tasks, it ask the "Master" for some resources.
+
+
+
+When the Driver process needs resources to run jobs/tasks, it ask the "Master" for some resources. 
+The "Master" allocates the resources and uses the "Workers" running through out the cluster to create "Executors" for the "Driver". 
+Then the Driver can run tasks in those "Executors".
+
 
 
 

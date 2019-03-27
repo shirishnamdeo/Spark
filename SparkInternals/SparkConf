@@ -1,3 +1,5 @@
+import org.apache.spark.SparkConf
+
 SparkConf sparkConf = new SparkConf()
 					.setAppName("Print Elements of RDD")
         	        .setMaster("local[2]")

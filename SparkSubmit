@@ -1,0 +1,11 @@
+Spark currently supports two deploy modes. 
+
+In client mode, the driver is launched in the same process as the client that submits the application. 
+
+In cluster mode, however, the driver is launched from one of the Worker processes inside the cluster, and the client process exits as soon as it fulfills its responsibility of submitting the application without waiting for the application to finish.
+
+
+If your application is launched through Spark submit, then the application jar is automatically distributed to all worker nodes. For any additional jars that your application depends on, you should specify them through the --jars flag using comma as a delimiter (e.g. --jars jar1,jar2). 
+
+
+
