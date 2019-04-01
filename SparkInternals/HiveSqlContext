@@ -11,7 +11,7 @@ HiveContext is the super-set of Sql Context.
 HiveContext can use window function, OVER(PARTITION BY)
 
 sqlContext available in spark-shell is a hiveContext by default.
-
+[sqlContext not available in Spark 2.4]
 
 Obviously if you want to work with Hive you have to use HiveContext. Beyond that the biggest difference as for now (Spark 1.5) is a support for window functions and ability to access Hive UDFs.
 

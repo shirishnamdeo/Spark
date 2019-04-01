@@ -1,0 +1,54 @@
+1) Read external data (from files) into DataFrame
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+val DIR_PATH = "file:///D:/SoftwareInstalled/Spark/Spark240/spark-2.4.0-bin-hadoop2.7/examples/src/main/resources/"
+
+
+val CSV_FILENAME = "people.csv"
+val JSON_FILENAME = "employees.json"
+val TEXT_FILENAME = "people.txt"
+val AVRO_FILENAME = "users.avro"
+val AVSC_FILENAME = "users.avsc"    -- Avro Schema File Format
+val ORC_FILENAME = "users.orc"
+val PARQUET_FILENAME = "users.parquet"
+
+
+
+
+val csv_file =  DIR_PATH + CSV_FILENAME
+spark.read.csv(csv_file)  -- Reading as a Dataframe
+
+
+val json_file = DIR_PATH + JSON_FILENAME
+spark.read.json(json_file)
+
+
+val text_file =  DIR_PATH + TEXT_FILENAME
+spark.read.text(text_file)
+
+
+val avro_file = DIR_PATH + AVRO_FILENAME
+spark.read.avro(avro_file)
+
+
+val avsc_file = DIR_PATH + AVSC_FILENAME
+** Doesn't exists
+
+
+val orc_file =  DIR_PATH + ORC_FILENAME
+spark.read.orc(orc_file)
+
+
+val parquet_file = DIR_PATH + PARQUET_FILENAME
+spark.read.parquet(parquet_file)
+
+
+
+

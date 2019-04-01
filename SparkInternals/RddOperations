@@ -1,0 +1,17 @@
+1) Read Data into RDD
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+** I think only textFile can be read into the Spark RDD's
+
+spark.sparkContext.textFile()
+-- This method is only used to read a text file.
+
+
+
