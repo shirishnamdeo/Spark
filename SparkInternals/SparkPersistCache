@@ -47,4 +47,19 @@ Spark automatically monitors cache usage on each node and drops out old data par
 If you would like to manually remove an RDD instead of waiting for it to fall out of the cache, use the RDD.unpersist() method. 
 
 
+
 RDD.unpersist()
+RDD.uncache() method doesn't seems to exist.
+-- After unpersist, a RDD behaves like usual, that ie fetching the data / doing the complete calculations each time.
+
+
+
+
+import org.apache.spark.storage.StorageLevel.
+import org.apache.spark.storage.StorageLevel._
+
+[ DISK_ONLY     MEMORY_AND_DISK     MEMORY_AND_DISK_SER     MEMORY_ONLY     MEMORY_ONLY_SER    
+  DISK_ONLY_2   MEMORY_AND_DISK_2   MEMORY_AND_DISK_SER_2   MEMORY_ONLY_2   MEMORY_ONLY_SER_2   OFF_HEAP  ]
+
+
+DataFrame.persist(StorageLevel.MEMORY_ONLY)

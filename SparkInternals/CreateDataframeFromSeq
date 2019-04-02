@@ -1,0 +1,232 @@
+1. toDF()               [From Sequence Objects]
+2. createDataFrame()    [From Sequence Objects]
+3. createDF()           [From Sequence Objects]  -- Not Available
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. toDF()               [From Sequence Objects]
+
+
+
+import spark.implicits._
+-- toDF() provides a concise syntax for creating DataFrames and can be accessed after importing Spark implicits.
+
+val sequenceObject1 = Seq((8, "bat"), (64, "mouse"), (-27, "horse"))
+-- sequenceObject1: Seq[(Int, String)] = List((8,bat), (64,mouse), (-27,horse))
+-- Note that the schema is auto-inferred by Scala type inference
+
+sequenceObject1.toDF()
+-- res2: org.apache.spark.sql.DataFrame = [_1: int, _2: string]
+
+sequenceObject1.toDF().show()
++---+-----+
+| _1|   _2|
++---+-----+
+|  8|  bat|
+| 64|mouse|
+|-27|horse|
++---+-----+
+
+
+
+sequenceObject1.toDF("Number", "Words")
+-- res3: org.apache.spark.sql.DataFrame = [Number: int, Words: string]
+
+sequenceObject1.toDF("Number", "Words").show()
++------+-----+
+|Number|Words|
++------+-----+
+|     8|  bat|
+|    64|mouse|
+|   -27|horse|
++------+-----+
+
+
+
+sequenceObject1.toDF("Number", "Words").printSchema
+root
+ |-- Number: integer (nullable = false)
+ |-- Words: string (nullable = true)
+
+-- Note that the Number Column is not Nullable, but the Words Column is Nullable.
+
+
+Limitations:
+	Column type and the Nullable flag cannot be customized.
+	toDF is good for local testing but not recommended for Production level code.
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. createDataFrame()    [From Sequence Objects]
+
+
+
+import org.apache.spark.sql.Row
+val sequenceObject2 = Seq( Row(8, "bat"), Row(64, "mouse"), Row(-27, "horse"))
+
+
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+
+
+// Defining the Schema with name, type and nullable parameters
+val Schema1 = List(
+    StructField("Number", IntegerType, true),
+    StructField("Words", StringType, true)
+)
+
+
+spark.createDataFrame(
+    spark.sparkContext.parallelize(sequenceObject2),
+    StructType(Schema1)
+)
+
+
+
+val dataDF = spark.createDataFrame(Seq(
+    (1, 1, 2, 3, 8, 4, 5),
+    (2, 4, 3, 8, 7, 9, 8),
+    (3, 6, 1, 9, 2, 3, 6),
+    (4, 18, 8, 6, 9, 4, 5),
+    (5, 9, 2, 7, 18, 7, 3),
+    (6, 1, 1, 4, 2, 8, 4)
+    ))
+dataDF: org.apache.spark.sql.DataFrame = [_1: int, _2: int ... 5 more fields]
+-- DataFrame is created but with _N column name
+-- Each tuple in the input forms a row in the DataFrame
+
+dataDF.show()
++---+---+---+---+---+---+---+
+| _1| _2| _3| _4| _5| _6| _7|
++---+---+---+---+---+---+---+
+|  1|  1|  2|  3|  8|  4|  5|
+|  2|  4|  3|  8|  7|  9|  8|
+|  3|  6|  1|  9|  2|  3|  6|
+|  4| 18|  8|  6|  9|  4|  5|
+|  5|  9|  2|  7| 18|  7|  3|
+|  6|  1|  1|  4|  2|  8|  4|
++---+---+---+---+---+---+---+
+
+
+-- Using toDF function on the existing DataFrame to name the columns
+dataDF.toDF(“colToExclude", "coll", "col2", “col3", "col4", “col5", "col6")
+
+
+val dataDF2 = spark.createDataFrame(Seq(
+    (1, 1, 2, 3, 8, 4, 5),
+    (2, 4, 3, 8, 7, 9, 8),
+    (3, 6, 1, 9, 2, 3, 6),
+    (4, 18, 8, 6, 9, 4, 5),
+    (5, 9, 2, 7, 18, 7, 3),
+    (6, 1, 1, 4, 2, 8, 4)
+    )).toDF(“colToExclude", "coll", "col2", “col3", "col4", “col5", "col6")
+
+
+dataDF2.show()
++------------+----+----+----+----+----+----+
+|colToExclude|coll|col2|col3|col4|col5|col6|
++------------+----+----+----+----+----+----+
+|           1|   1|   2|   3|   8|   4|   5|
+|           2|   4|   3|   8|   7|   9|   8|
+|           3|   6|   1|   9|   2|   3|   6|
+|           4|  18|   8|   6|   9|   4|   5|
+|           5|   9|   2|   7|  18|   7|   3|
+|           6|   1|   1|   4|   2|   8|   4|
++------------+----+----+----+----+----+----+
+
+
+http://bailiwick.io/2017/08/08/selecting-dynamic-columns-in-spark-dataframes/
+
+val colsToSelect = dataDF2.columns.filter(_ != "colToExclude”)
+
+// Taking a look at the colsToSelect value
+colsToSelect.mkString(",")
+res66: String = coll,col2,col3,col4,col5,col6
+
+// Selecting the Columns
+// This method creates a new datafreme using your column list, Filter dataDF using the colsToSelect array, and map the results into columns.
+dataDF2.select(colsToSelect.head, colsToSelect.tail: _*).show()
+
+
+import org.apache.spark.sql.Column
+dataDF2.select(dataDF2.columns.filter(colName => colsToSelect.contains(colName)).map(colName => new Column(colName)): _*).show()
+
+
+In the simple selection method, note that we had to use colsToSelect.head and colsToSelect.tail: _*. The reason for
+this is that the overloaded dataframe.select() method for multiple columns requires at least 2 column names. If you
+just put in the array name without using .head and .tail, you'll get an overloaded method error.
+
+
+
+
+
+
+val sequenceObject3 = Seq(
+    Row(1, "col1_val1", "col2_val1", "col3_val1"),
+    Row(2, "col1_val2", "col2_val2", "col3_val2"),
+    Row(3, "col1_val3", "col2_val3", "col3_val3"),
+    Row(4, "col1_val4", "col2_val4", null),
+    Row(5, "col1_val5", "col2_val5", "col3_val5"),
+    Row(6, "",          "col2_val6", "col3_val6")
+    )
+
+val Schema3 = List(
+    StructField("Number", IntegerType, true),
+    StructField("Col1", StringType, true),
+    StructField("Col2", StringType, true),
+    StructField("Col3", StringType, true)
+)
+
+val dataframe3 = spark.createDataFrame(
+    spark.sparkContext.parallelize(sequenceObject3),
+    StructType(Schema3)
+)
+
+
+
+dataframe3.show()
++------+---------+---------+---------+
+|Number|     Col1|     Col2|     Col3|
++------+---------+---------+---------+
+|     1|col1_val1|col2_val1|col3_val1|
+|     2|col1_val2|col2_val2|col3_val2|
+|     3|col1_val3|col2_val3|col3_val3|
+|     4|col1_val4|col2_val4|     null|
+|     5|col1_val5|col2_val5|col3_val5|
+|     6|         |col2_val6|col3_val6|
++------+---------+---------+---------+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+3. createDF()           [From Sequence Objects]
+createDF() is defined in spark-daria and allows for the following terse syntax.
+
+-- spark-daria **???
+
+
+val someDF = spark.createDF(
+  List(
+    (8, "bat"),
+    (64, "mouse"),
+    (-27, "horse")
+  ), List(
+    ("number", IntegerType, true),
+    ("word", StringType, true)
+  )
+)
+
+ERROR: value createDF is not a member of org.apache.spark.sql.SparkSession

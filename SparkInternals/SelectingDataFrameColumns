@@ -1,0 +1,38 @@
+
+
+DataFrame.select("column_name")
+DataFrame.select($"column_name")
+
+
+DataFrame.select("<column_name1>", "<column_name2>")
+DataFrame.select($"<column_name1>", $"<column_name2>", $"<column_name3>")
+
+
+// A new column will be added with the calculated values
+DataFrame.select($"<column_name1>", $"<column_name2>", $"<column_name2>"+ 1).show()
+
+
+import org.apache.spark.sql.functions._
+import org.apache. spark.sql.functions.col
+
+
+val columns_to_select = List(
+    "<column_name1>",
+    "<column_name2>",
+    "<column_name3>",
+    "<column_name4>",
+    "<column_name5>"
+)
+
+
+DataFrame.select(columns_to_select.map(col):_*)
+
+DataFrame.select(columns_to_select.map(name => col(name)))    -- But not working
+-- DataFrame.select() do not take Scala List[String], it takes List[org.apache.spark.sql.Column] object instead
+
+
+We can create the objekt explictly as below:
+columns_to_select.map(name => col(name))
+
+
+

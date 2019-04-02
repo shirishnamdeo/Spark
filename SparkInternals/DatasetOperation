@@ -1,0 +1,41 @@
+https://medium.zenika.com/a-comparison-between-rdd-dataframe-and-dataset-in-spark-from-a-developers-point-of-view-a539b5acf734
+
+
+
+The Dataset API, released as an API preview in Spark 1.6, aims to provide the best of both worlds; the familiar object-oriented programming style and compile-time type-safety of the RDD API but with the performance benefits of the Catalyst query optimizer. 
+Datasets also use the same efficient off-heap storage mechanism as the  DataFrame API.
+
+
+When it comes to serializing data, the Dataset API has the concept of encoders which translate between JVM representations (objects) and Spark’s internal binary format. Spark has built-in encoders which are very advanced in that they generate byte code to interact with off-heap data and provide on-demand access to individual attributes without having to de-serialize an entire object.
+
+
+Performance:
+A DataFrame/Dataset tends to be more efficient than an RDD.
+
+What happens inside Spark core is that a DataFrame/Dataset is converted into an optimized RDD. Spark analyses the code and chooses the best way to execute it.
+
+For instance, if you want to group data before filtering it, it is not efficient. You group a bigger bunch of data than you need because you filter them after. If you do this with an RDD, Spark will execute this way.
+
+But, if you do the same with a DataFrame/Dataset, Spark will optimize the execution and will filter your data before grouping them. This is what we call the “Catalyst optimization”.
+
+
+
+
+// Making a Custom Schema
+import org.apache.spark.sql.types.{StructType, StructField, StringType, IntegerType};
+val customSchema = StructType(Seq(StructField("userId", StringType, true), StructField("color", StringType, true), StructField("count", IntegerType, true)))
+
+
+// we create an "AbTest" class to link our data to a class:
+case class AbTest(userId: String, color: String, count: Integer)
+
+
+// Here we transform our DataFrame to a Dataset. The main difference in this case is that our Dataset is typed.
+// It means that if we try to filter or select a nonexistent attribute of our AbTest class, we will have an analysis error saying that "value x is not a member of AbTest".
+val result = spark.read.schema(customSchema).option("delimiter", ",").csv("/user/nsaby/testevent").as[AbTest]
+
+
+val finalResult = result.groupBy("color").sum("count")
+val output = finalResult.collect()
+
+

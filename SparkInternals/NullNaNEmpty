@@ -1,0 +1,63 @@
+https://www.mungingdata.com/apache-spark/dealing-with-null
+https://stackoverflow.com/questions/45516387/how-to-find-columns-with-many-nulls-in-spark-scala?rq=1
+https://stackoverflow.com/questions/39727742/how-to-filter-out-a-null-value-from-spark-dataframe
+
+
+
+val sequenceObject3 = Seq(
+    Row(1, "col1_val1", "col2_val1", "col3_val1"),
+    Row(2, "col1_val2", "col2_val2", "col3_val2"),
+    Row(3, "col1_val3", "col2_val3", "col3_val3"),
+    Row(4, "col1_val4", "col2_val4", null),
+    Row(5, "col1_val5", "col2_val5", "col3_val5"),
+    Row(6, "",          "col2_val6", "col3_val6")
+    )
+
+val Schema3 = List(
+    StructField("Number", IntegerType, true),
+    StructField("Col1", StringType, true),
+    StructField("Col2", StringType, true),
+    StructField("Col3", StringType, true)
+)
+
+val dataframe3 = spark.createDataFrame(
+    spark.sparkContext.parallelize(sequenceObject3),
+    StructType(Schema3)
+)
+
+
+
+dataframe3.show()
++------+---------+---------+---------+
+|Number|     Col1|     Col2|     Col3|
++------+---------+---------+---------+
+|     1|col1_val1|col2_val1|col3_val1|
+|     2|col1_val2|col2_val2|col3_val2|
+|     3|col1_val3|col2_val3|col3_val3|
+|     4|col1_val4|col2_val4|     null|
+|     5|col1_val5|col2_val5|col3_val5|
+|     6|         |col2_val6|col3_val6|
++------+---------+---------+---------+
+
+
+
+
+
+
+
+
+// Filtering Out the Null 
+DataFrame.filter(dF(colName).isNull).count()
+
+
+
+
+// Filtering Rows containing Null Value in a Column (Need to verify)
+
+DataFrame.select($"<column_name>").filter(DataFrame("<column_name>").isNull).count()
+
+DataFrame.select($"<column_name>").filter(DataFrame("<column_name>").isNaN).count()
+
+DataFrame.select($"<column_name>").filter(DataFrame("<column_name>") === "").count()
+
+DataFrame.filter(DataFrame("<column_name>").isNull || DataFrame("<column_name>").isNaN || DataFrame("<column_name>") === "" ).count()

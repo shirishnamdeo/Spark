@@ -1,0 +1,7 @@
+
+
+DataFrame.write.parquet("hdfs://<namenode-address>:<port>/<new_or_existing_directory>/")
+-- Number of parquet files written is same as the number of RDD Partitions of the DataFrame
+
+
+DataFrame.rdd.getNumPartitions

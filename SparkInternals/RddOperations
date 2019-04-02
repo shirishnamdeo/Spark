@@ -14,4 +14,3 @@ spark.sparkContext.textFile()
 -- This method is only used to read a text file.
 
 
-
