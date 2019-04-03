@@ -11,7 +11,7 @@ DataFrame.orderBy(desc("<column_name>")).show()
 
 DataFrame.orderBy($"<column_name>".desc).show()
 
-DataFrame.orderBy(desc("<column_name1>") , desc("<column_name2>") ,asc("<column_name3>"))
+DataFrame.orderBy(desc("<column_name1>"), desc("<column_name2>"), asc("<column_name3>"))
 
 -- DataFrame.orderBy returns a DataSet[Row]
 

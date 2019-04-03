@@ -26,3 +26,35 @@ def count_distinct(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark
 -- Another method
 val exprs = DataFrame.columns.map((_ -> "approx_count_distinct")).toMap
 DataFrame.agg(exprs).show()
+
+
+
+
+---------------------------------------------------------------------------------------------------
+
+def count_null(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
+    val df_columns = data_frame.columns
+    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col).isNull).count)).toMap.toSeq.toDF("column_name","null_count")
+}
+
+
+
+def count_nan(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
+    val df_columns = data_frame.columns
+    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col).isNaN).count)).toMap.toSeq.toDF("column_name","nan_count")
+}
+
+
+
+def count_empty_string(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
+    val df_columns = data_frame.columns
+    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col) === "").count)).toMap.toSeq.toDF("column_name","empty_string_count")
+}
+
+
+
+
+def count_single_space(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
+    val df_columns = data_frame.columns
+    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col) === " ").count)).toMap.toSeq.toDF("column_name","single_space_count")
+}

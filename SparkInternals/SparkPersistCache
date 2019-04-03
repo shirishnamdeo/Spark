@@ -22,7 +22,23 @@ There is also support for persisting RDDs on disk, or replicated across multiple
 
 
 
-StorageLevel Object is passed in the persist() method.
+
+persist() calls sparkSession.sharedState.cacheManager.cacheQuery(). cacheTable also call the same function.
+
+Both cache() and persist() are lazily evaluated (only when action is perofrmed)
+
+
+cacheTable()
+	Lazily evaluated
+
+
+CACHE TABLE
+	Stored whole table in Memory (but can lead to Out-Of-Memory )
+	Eagerly evaluated
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 RDD..cache() -- Is only for a default storage, with the StorageLevel as StorageLevel.MEMORY_ONLY
 
@@ -48,12 +64,8 @@ If you would like to manually remove an RDD instead of waiting for it to fall ou
 
 
 
-RDD.unpersist()
-RDD.uncache() method doesn't seems to exist.
--- After unpersist, a RDD behaves like usual, that ie fetching the data / doing the complete calculations each time.
 
-
-
+// StorageLevel Object is passed in the persist() method.
 
 import org.apache.spark.storage.StorageLevel.
 import org.apache.spark.storage.StorageLevel._
@@ -63,3 +75,23 @@ import org.apache.spark.storage.StorageLevel._
 
 
 DataFrame.persist(StorageLevel.MEMORY_ONLY)
+
+
+
+RDD.unpersist()
+RDD.uncache() method doesn't seems to exist.
+-- After unpersist, a RDD behaves like usual, that ie fetching the data / doing the complete calculations each time.
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+val dataframe1 = spark.read.csv(...)
+dataframe1.cache()
+dataframe1.count()
+
+-- Not if we make a reference to another val, say dataframe2 and trigger any action

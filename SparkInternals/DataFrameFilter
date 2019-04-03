@@ -1,5 +1,13 @@
 
 
+DataFrame.filter($"<column_name>" > value)
+DataFrame.filter($"<column_name>" >= value)
+DataFrame.filter($"<column_name>" === value)
+
+
+
+
+
 // Filtering Rows containing Null Value in a Column (Need to verify)
 
 DataFrame.select($"<column_name>").filter(DataFrame("<column_name>").isNull).count()
@@ -12,4 +20,4 @@ DataFrame.select($"<column_name>").filter(DataFrame("<column_name>") === "").cou
 
 DataFrame.filter(DataFrame("<column_name>").isNull || DataFrame("<column_name>").isNaN || DataFrame("<column_name>") === "" ).count()
 
-DataFrame.filter($"<column_name>" > value).select($"<column_name>").distinct().show()
+

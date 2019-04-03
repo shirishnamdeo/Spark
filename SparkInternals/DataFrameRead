@@ -88,8 +88,10 @@ spark.read.option("sep", "\u0001").text("<path_to_DIR_or_FILE>")
 
     .option("sep", "\u0001")
     .option("inferSchema", "true")
+    .option("delimiter", ",")
+    .option("header", "true")
 
-    .format("text").load(<"path_to_DIR_or_FILE">)
+    .format("[text|csv]").load(<"path_to_DIR_or_FILE">)  [If format is specified, then we use just load()]
 
     
 
@@ -118,3 +120,8 @@ Observation:
 
 
  
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. Loading Data in Dataframe From Table (Hive)
+
+spark.sql(SELECT * FROM <namespace>.<table_name>)
