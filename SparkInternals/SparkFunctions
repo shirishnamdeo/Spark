@@ -19,7 +19,7 @@ def count_distinct(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark
     
     // 1. Calculating Distinct Count of each columns
     // 2. Converting the result to Map -> Sequence -> DataFrame
-    df_columns.map(col => (col, date_frame.select(col).distinct.count)).toMap.toSeq.toDF("column_name","distinct_count")
+    df_columns.map(col => (col, data_frame.select(col).distinct.count)).toMap.toSeq.toDF("column_name","distinct_count")
 }
 
 
@@ -34,21 +34,21 @@ DataFrame.agg(exprs).show()
 
 def count_null(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
     val df_columns = data_frame.columns
-    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col).isNull).count)).toMap.toSeq.toDF("column_name","null_count")
+    df_columns.map(col => (col, data_frame.select(col).filter(data_frame(col).isNull).count)).toMap.toSeq.toDF("column_name","null_count")
 }
 
 
 
 def count_nan(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
     val df_columns = data_frame.columns
-    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col).isNaN).count)).toMap.toSeq.toDF("column_name","nan_count")
+    df_columns.map(col => (col, data_frame.select(col).filter(data_frame(col).isNaN).count)).toMap.toSeq.toDF("column_name","nan_count")
 }
 
 
 
 def count_empty_string(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
     val df_columns = data_frame.columns
-    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col) === "").count)).toMap.toSeq.toDF("column_name","empty_string_count")
+    df_columns.map(col => (col, data_frame.select(col).filter(data_frame(col) === "").count)).toMap.toSeq.toDF("column_name","empty_string_count")
 }
 
 
@@ -56,5 +56,5 @@ def count_empty_string(data_frame:org.apache.spark.sql.DataFrame) : org.apache.s
 
 def count_single_space(data_frame:org.apache.spark.sql.DataFrame) : org.apache.spark.sql.DataFrame = {
     val df_columns = data_frame.columns
-    df_columns.map(col => (col, date_frame.select(col).filter(date_frame(col) === " ").count)).toMap.toSeq.toDF("column_name","single_space_count")
+    df_columns.map(col => (col, data_frame.select(col).filter(data_frame(col) === " ").count)).toMap.toSeq.toDF("column_name","single_space_count")
 }
