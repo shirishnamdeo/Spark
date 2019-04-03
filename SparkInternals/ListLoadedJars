@@ -1,0 +1,4 @@
+spark-shell --jars --master=spark://datasci:7077 --jars /opt/jars/xgboost4j-spark-0.7-jar-with-dependencies.jar --packages elsevierlabs-os:spark-xml-utils:1.6.0
+
+
+spark.sparkContext.listJars.foreach(println)

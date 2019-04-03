@@ -26,6 +26,7 @@ import org.apache.spark.sql.types.{StructType, StructField, StringType, IntegerT
 val customSchema = StructType(Seq(StructField("userId", StringType, true), StructField("color", StringType, true), StructField("count", IntegerType, true)))
 
 
+
 // we create an "AbTest" class to link our data to a class:
 case class AbTest(userId: String, color: String, count: Integer)
 
@@ -39,3 +40,24 @@ val finalResult = result.groupBy("color").sum("count")
 val output = finalResult.collect()
 
 
+
+
+
+
+
+
+val range100 = spark.range(100)
+range100.collect()
+
+
+DataFrame = Dataset[Row]
+
+You can explicitly convert your DataFrame into a Dataset reflecting a Scala class object by defining a domain-specific Scala case classand converting the DataFrame into that type:
+
+// First, define a case class that represents a type-specific Scala JVM Object
+case class Person (name: String, age: Long)
+
+val ds = spark.read.json("/databricks-datasets/samples/people/people.json").as[Person]
+
+
+There are two reasons to convert a DataFrame into a type-specific JVM object. First, after an explicit conversion, for all relational and query expressions using Dataset API, you get compile-type safety. For example, if you use a filter operation using the wrong data type, Spark detects mismatch types and issues a compile error rather an execution runtime error, so that you catch errors earlier. Second, the Dataset API provides high-order methods, which makes code much easier to read and develop.
