@@ -22,3 +22,6 @@ spark-shell \
 
 -- spark-shell --jars sparkling-water-assembly-1.6.13.1.jar
 -- Importing h2o here also works
+
+
+spark-shell --jars D:\SoftwareInstalled\SparklingWater\SparklingWater_2.4\sparkling-water-2.4.8\assembly\build\libs\sparkling-water-assembly_2.11-2.4.8-all.jar

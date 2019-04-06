@@ -1,0 +1,78 @@
+//Right now XGboost is supported on only single node machine.
+
+import org.apache.spark.h2o._
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
+
+import _root_.hex.tree.xgboost._
+import _root_.hex.tree.xgboost.XGBoost
+import _root_.hex.tree.xgboost.XGBoostModel
+
+import _root_.hex.tree.xgboost.XGBoostModel.XGBoostParameters
+
+import _root_.water.support.ModelMetricsSupport
+import org.apache.spark.ml.feature.{StringIndexer, IndexToString, VectorIndexer}
+
+ 
+
+// Building H20Context
+val h2oContext: H2OContext = H2OContext.getOrCreate(spark.sparkContext) 
+val h2oContext: H2OContext = H2OContext.getOrCreate(spark)
+
+ 
+
+
+// Generating Train Data
+val trainDF = sqlContext.sql("SELECT <selected_columns> FROM <table_name>)
+val trainingH2OFrame: H20Frame = h20Context.asH20Frame(trainDF)
+val categoricalColumns: Array[String] = Array("<column_name1>", "<column_name12>", ...)
+trainingH2OFrame.colToEnum(categoricalColumns)
+
+
+// Generating Test Data
+val testDF = sqlContext.sql("SELECT <selected_columns> FROM <table_name>)
+val testH2OFrame: H2OFrame = h2oContext.asH2OFrame(testDF)
+val categoricalColumns: Array[String] = Array("<column_name1>", "<column_name12>", ...)
+testH2OFrame.colToEnum(categoricalColumns)
+
+
+val responseColumn = "<response_column_name>"
+val trainingColumns: Array[String] = Array("<column_name1>", "<column_name2>", ...)
+val ignoredColumns: Array[String] = trainDF.columns.diff(trainingColumns ++ Array(responseColumn))
+
+
+
+val responseColumn = "<response_column_name>"
+val trainingColumns: Array[String] = Array("<column_name1>", "<column_name2>", ...)
+val ignoredColumns: Array[String] = trainDF.columns.diff(trainingColumns ++ Array(responseColumn))
+
+
+
+
+// Building Model
+
+val xgboostParams: XGBoostParameters = new XGBoostParameters()
+xgboostParams._train = trainingH20Frame._key
+xgboostParams._response_column = responseColumn
+xgboostParams._ignored_columns = ignoredColumns
+xgboostParams._ntrees = 1
+
+ 
+
+  
+// ERROR: XGBoost is currently only supported in single-node mode.
+val xgboost: XGBoost = new XGBoost(xgboostParams)
+val xgboost_model= xgboostParams.trainModel.get
+
+ 
+
+
+// Generating Predictions and Accuracy
+
+val predictionH2OFrame = xgboost_model.score(testH2OFrame)
+testH2OFrame.add(predictionH2OFrame)
+testH2OFrame.update()
+
+
+val test_predictDF = h2oContext.asDataFrame(testH2OFrame)(sqlContext)
+test_predictDF.registerTempTable("predict_table")
+sqlContext.sql("SELECT SUM(flag)/ COUNT(*) AS accuracy from (SELECT (CASE WHEN <response_column_name> = predict THEN 1 ELSE 0 END ) AS flag from predict_table) AS Flag table").show()

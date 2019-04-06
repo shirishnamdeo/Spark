@@ -2,6 +2,12 @@ https://www.mungingdata.com/apache-spark/dealing-with-null
 https://stackoverflow.com/questions/45516387/how-to-find-columns-with-many-nulls-in-spark-scala?rq=1
 https://stackoverflow.com/questions/39727742/how-to-filter-out-a-null-value-from-spark-dataframe
 
+https://stackoverflow.com/questions/40500732/scala-dataframe-null-check-for-columns  [Advance   ]
+
+
+https://stackoverflow.com/questions/33376571/replace-null-values-in-spark-dataframe
+
+
 
 
 val sequenceObject3 = Seq(
@@ -45,7 +51,6 @@ dataframe3.show()
 
 
 
-
 // Filtering Out the Null 
 DataFrame.filter(dF(colName).isNull).count()
 
@@ -64,6 +69,32 @@ DataFrame.filter(DataFrame("<column_name>").isNull || DataFrame("<column_name>")
 
 
 
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+DataFrame.filter($"<column_name>".isNotNull)
+DataFrame.where(DataFrame("<column_name>").isNotNull)
+
+DataFrame.filter($"<column_name>".isNull)
+DataFrame.filter("<column_name> is null")
+
+
+DataFrame.filter(col("<column_name1>").isNotNull && col("<column_name2>").isNotNull)
+DataFrame.where("<column_name1> is not null and <column_name2> is not null")
+
+
+-- Finding all the columns with Not-Null values
+val filterCond = DataFrame.columns.map(x=>col(x).isNotNull).reduce(_ && _)
+DataFrame.filter(filterCond)
+
+
+-- Dropping the row with any Null Values
+Dataset<Row> filtered = DataFrame.filter(row -> !row.anyNull());
+
+
+DataFrame.where(DataFrame.col("<column_name>").isNotNull().and(DataFrame.col("<column_name>").notEqual("")))
 
 
 
@@ -119,4 +150,63 @@ df.filter("id is null").show
 
 
 
+// Replacing Null Values with 0 else 1
+// Essentially we are just overwritting the existing column (Obviously a new DF will be formed - Immutability)
+df.withColumn("id", when($"id".isNull, 0).otherwise(1)).show
+
+// Replacing Null Values with 0 else same
+df.withColumn("id", when($"id".isNull, 0).otherwise($"id")).show
+
+
+// Else additional column can also be formed
+df.withColumn("id_updated", when($"id".isNull, 0).otherwise($"id")).show
+
+
+
+df.filter($"id".isNull).show()
++----+----+---------+-----------+
+|name|  id|    email|    company|
++----+----+---------+-----------+
+|  n1|null|n1@c1.com|[c1, 1, d1]|
+|  n5|null|n5@c2.com|[c2, 2, d2]|
++----+----+---------+-----------+
+
+
+df.filter($"id".isNotNull).show()
++----+---+---------+-----------+
+|name| id|    email|    company|
++----+---+---------+-----------+
+|  n2|  2|n2@c1.com|[c1, 1, d1]|
+|  n3|  3|n3@c1.com|[c1, 1, d1]|
+|  n4|  4|n4@c2.com|[c2, 2, d2]|
+|  n6|  6|n6@c2.com|[c2, 2, d2]|
+|  n7|  7|n7@c3.com|[c3, 3, d3]|
+|  n8|  8|n8@c3.com|[c3, 3, d3]|
++----+---+---------+-----------+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+scala> data_frame.select("age").filter("age is null").count()
+res55: Long = 177
+
+scala> data_frame.select("age").count()
+res56: Long = 891
+
+scala> data_frame.select("age").na.drop().count()
+res57: Long = 714
+
+scala> data_frame.select("age").na.fill(0).count()
+res58: Long = 891
+
+scala> data_frame.select("age").na.fill(0).filter("age is null").count()
+res61: Long = 0
 
