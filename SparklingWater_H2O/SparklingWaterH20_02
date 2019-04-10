@@ -1,0 +1,7 @@
+http://docs.h2o.ai/h2o/latest-stable/h2o-docs/faq/sparkling-water.html
+
+
+Sparkling Water allows users to combine the fast, scalable machine learning algorithms of H2O with the capabilities of Spark.
+
+Sparkling Water contains the same features and functionality as H2O but provides a way to use H2O with Spark, a large-scale cluster framework.
+

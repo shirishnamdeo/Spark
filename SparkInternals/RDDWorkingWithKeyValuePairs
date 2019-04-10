@@ -1,0 +1,62 @@
+https://www.oreilly.com/library/view/learning-spark/9781449359034/ch04.html
+
+
+Advance Partitioning
+Using controllable partitioning, applications can sometimes greatly reduce communication costs by ensuring that data will be accessed together and will be on the same node.
+
+
+
+Spark provided special operation on PairRDD's
+
+
+Creating PairRDD
+1. Directly loading data which return a PairRDD
+
+2. Convert the regular RDD into PairRDD (example use map method)
+   
+   	-- Cannot find a way to directly convert a List of Tuples to PairRDD
+	scala> spark.sparkContext.parallelize(List((1, 10), (2, 20), (3, 30))).map(item => (item._1, item._2)).collect()  -- Even this is MapPartitionsRDD
+	res118: Array[(Int, Int)] = Array((1,10), (2,20), (3,30))
+
+	-- Is MapPartitionsRDD same as PairRDD ??**
+
+
+
+
+spark.sparkContext.parallelize(List((0, 0), (1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60), (7, 70), (8, 80), (9, 90)))
+
+-- Just forming some randon PairRDD
+scala> spark.sparkContext.parallelize(List((0, 0), (1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60), (7, 70), (8, 80), (9, 90))).map(item => (if (item._1 % 2 == 0) {item._1 / 2 } else {item._1}, item._2)).collect()
+res126: Array[(Int, Int)] = Array((0,0), (1,10), (1,20), (3,30), (2,40), (5,50), (3,60), (7,70), (4,80), (9,90))
+
+scala> x.reduceByKey(_ + _).collect()
+scala> x.reduceByKey((val1, val2) => (val1 + val2)).collect()
+
+res131: Array[(Int, Int)] = Array((0,0), (1,30), (9,90), (2,40), (3,90), (4,80), (5,50), (7,70))
+-- Notice how the ordering changed 
+
+
+scala> x.groupByKey().collect()
+res134: Array[(Int, Iterable[Int])] = Array((0,CompactBuffer(0)), (1,CompactBuffer(10, 20)), (9,CompactBuffer(90)), (2,CompactBuffer(40)), (3,CompactBuffer(30, 60)), (4,CompactBuffer(80)), (5,CompactBuffer(50)), (7,CompactBuffer(70)))
+
+
+mapValues -- Apply finction to each value of a PairRDD without changing the Key
+
+
+-- Transformations on One-PairRDD
+	PairRDD.reduceByKey(function)
+	PairRDD.groupByKey()
+	PairRDD.combineByKey(createCombiner, mergeValue, mergeCombiners, partitioner)
+	PairRDD.mapValues(function)
+	PairRDD.flatMapValues(function)
+	PairRDD.keys()
+	PairRDD.values()
+	PairRDD.sortByKeys()
+
+
+-- Transformation on Two-PairRDD
+	subtractByKey
+	join
+	rightOuterJoin
+	leftOuterJoin
+	cogroup

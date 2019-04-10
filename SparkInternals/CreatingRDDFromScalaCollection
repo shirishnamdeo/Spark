@@ -1,0 +1,67 @@
+RDD's can be created by passing the Scala Collection Object into sparkContext.parallelize() method
+
+def parallelize[T](seq: Seq[T],numSlices: Int)(implicit evidence$1: scala.reflect.ClassTag[T]): org.apache.spark.rdd.RDD[T]
+
+
+-- Creating RDD from Scala Range 
+
+scala> 1.to(10)
+res5: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)  -- This is a scala collection
+
+scala> spark.sparkContext.parallelize(1.to(10))
+res6: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[2] at parallelize at <console>:24
+
+scala> spark.sparkContext.parallelize(1.to(10)).collect()
+res7: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+
+
+-- We can ommit the dot(.) in the notaion too
+scala> 1 to(10)
+res8: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+scala> spark.sparkContext.parallelize(1 to(10)).collect()
+res9: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+
+
+
+scala> 1 to 10
+res10: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+scala> spark.sparkContext.parallelize(1 to 10).collect()
+res11: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+
+
+
+
+-- Creating RDD from Scala List
+
+scala> List("item1", "item2", "item3")
+res19: List[String] = List(item1, item2, item3)
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3"))
+res20: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[6] at parallelize at <console>:24
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3")).collect()
+res21: Array[String] = Array(item1, item2, item3)
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3")).count()
+res22: Long = 3
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3")).map(i => (i, i.length))
+res24: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[10] at map at <console>:24
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3")).map(i => (i, i.length)).collect()
+res25: Array[(String, Int)] = Array((item1,5), (item2,5), (item3,5))
+
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3", 10))
+res44: org.apache.spark.rdd.RDD[Any] = ParallelCollectionRDD[19] at parallelize at <console>:24
+
+scala> spark.sparkContext.parallelize(List("item1", "item2", "item3", 10)).map(i => (i, i.length))
+ERROR -> When we used an int (or another class object other than String), then the Scala Collection of [Any] is created, which does not have length method.
+
+
+

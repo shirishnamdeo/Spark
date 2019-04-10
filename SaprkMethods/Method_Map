@@ -30,6 +30,11 @@ scala> y.collect
 res47: Array[(String, Int)] = Array((spark,1), (rdd,1), (example,1), (sample,1), (example,1))
 
 
+x.map(_).collect()       -- Simple underscore doesn't work
+x.map((_)).collect()     -- Simple underscore doesn't work
+x.map(_ => _).collect()  -- Simple underscore doesn't work
+
+
 
 
 
@@ -78,11 +83,36 @@ scala> y.collect()
 res22: Array[Array[String]] = Array(Array(spark, rdd, example), Array(sample, example))
 
 
-
 scala> y.collect()(1)
 res23: Array[String] = Array(sample, example)
--- So the array referencing is only possible in Scala JVM I believe, not on Spark Context RDD's
+-- So the array referencing is only possible for pure Scala objects I believe, not on Spark Context RDD's
 
 
 
 
+
+
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" ")).collect()
+res54: Array[Array[String]] = Array(Array(Shirish, Namdeo), Array(Shashank, Namdeo))
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" "))
+res55: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[27] at map at <console>:24
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" ")).map(item => item.length).collect()
+res56: Array[Int] = Array(2, 2)
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" ")).map(item => item(1)).collect()
+res57: Array[String] = Array(Namdeo, Namdeo)
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" ")).map(item => item(0)).collect()
+res58: Array[String] = Array(Shirish, Shashank)
+
+scala> spark.sparkContext.parallelize(List("Shirish Namdeo", "Shashank Namdeo"), numSlices = 10).map(name => name.split(" ")).map(item => item(0).length).collect()
+res59: Array[Int] = Array(7, 8)
+
+
+
+
+***
+The method map converts each element of the source RDD into a single element of the result RDD by applying a function. mapPartitions converts each partition of the source RDD into multiple elements of the result (possibly none).

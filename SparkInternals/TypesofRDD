@@ -1,0 +1,4 @@
+ParallelCollectionRDD  -- Created when I have used sparkContext.parallelize method to create an RDD.
+MapPartitionsRDD       -- Created after the map function is applied
+
+

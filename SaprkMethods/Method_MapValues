@@ -1,0 +1,35 @@
+mapValues -- Apply finction to each value of a PairRDD without changing the Key
+
+
+
+spark.sparkContext.parallelize(List((0, 0), (1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60), (7, 70), (8, 80), (9, 90)))
+
+-- Just forming some randon PairRDD
+scala> spark.sparkContext.parallelize(List((0, 0), (1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60), (7, 70), (8, 80), (9, 90))).map(item => (if (item._1 % 2 == 0) {item._1 / 2 } else {item._1}, item._2)).collect()
+res126: Array[(Int, Int)] = Array((0,0), (1,10), (1,20), (3,30), (2,40), (5,50), (3,60), (7,70), (4,80), (9,90))
+
+
+
+-- Just forming some randon PairRDD
+scala> val x = spark.sparkContext.parallelize(List((0, 0), (1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60), (7, 70), (8, 80), (9, 90))).map(item => (if (item._1 % 2 == 0) {item._1 / 2 } else {item._1}, item._2))
+
+
+scala> x.collect()
+res135: Array[(Int, Int)] = Array((0,0), (1,10), (1,20), (3,30), (2,40), (5,50), (3,60), (7,70), (4,80), (9,90))
+
+
+
+scala> x.mapValues(_ + 1)
+res136: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[141] at mapValues at <console>:26
+
+scala> x.mapValues(_ + 1).collect()
+res137: Array[(Int, Int)] = Array((0,1), (1,11), (1,21), (3,31), (2,41), (5,51), (3,61), (7,71), (4,81), (9,91))
+
+scala> x.mapValues(i => i+1).collect()
+res138: Array[(Int, Int)] = Array((0,1), (1,11), (1,21), (3,31), (2,41), (5,51), (3,61), (7,71), (4,81), (9,91))
+
+
+
+
+
+

@@ -1,0 +1,30 @@
+
+Method1: (To get the elements of RDD by index)
+
+scala> spark.sparkContext.parallelize(100 to 200)
+
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.collect()
+res81: Array[(Int, Long)] = Array((100,0), (101,1)..    -- Origional RDD is indexed with (value, index)
+
+-- This RDD is a ZippedWithIndexRDD
+
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.values.collect() -- But this will give the Array[Long] = Array(0, 1, 2, 3, 4, 5, ..100)
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.keys.collect()   -- Array[Int] = Array(100, 101, .. 200)
+
+-- So we need to reverse the (key, value)
+
+
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.map(item => (item._2, item._1))
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.map{case (k,v) => (v, k)}
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.map(_.swap)
+-- Above both are equivalent
+
+-- Now we can use lookup to find an element with index
+scala> spark.sparkContext.parallelize(100 to 200).zipWithIndex.map(item => (item._2, item._1)).lookup(10)
+res100: Seq[Int] = WrappedArray(110)
+
+
+
+
+-- Note: Is the RDD ordering is undefimed unless it is sorted ?? How to sort then?
+
