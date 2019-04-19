@@ -1,0 +1,4 @@
+
+
+// Non Empty Filter
+RDD.filter(_.nonEmpty)

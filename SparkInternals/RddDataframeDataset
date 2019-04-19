@@ -12,3 +12,27 @@ Spark Dataset (Spark 1.6+):
 
 	Because of using spark SQL engine, it auto discovers the schema of the files. ***??? How?
 	
+
+
+The more Spark knows about the data initially, the more optimizations are available for you.
+
+RDD. Raw data lacking predefined structure forces you to do most of the optimizations by yourself. This results in lower performance out of the box and requires more effort to speed up the data processing.
+Datasets. Typed data, possible to apply existing common optimizations, benefits of Spark SQL’s optimized execution engine.
+DataFrames. Share the codebase with the Datasets and have the same basic optimizations. In addition, you have optimized code generation, transparent conversions to column based format and an SQL interface.
+
+
+Catalyst optimizer and Tungsten’s efficient code generation
+
+
+DataFrame:
+DataFrame is based on RDD, it translates SQL code and domain-specific language (DSL) expressions into optimized low-level RDD operations.
+Since Spark 2.0, DataFrame is implemented as a special case of Dataset.
+Most constructions may remind you of SQL as DSL. Naturally, its parent is HiveQL.
+
+
+DataFrame has two main advantages over RDD:
+	Optimized execution plans via Catalyst Optimizer.
+	Custom Memory management via Project Tungsten.
+
+
+

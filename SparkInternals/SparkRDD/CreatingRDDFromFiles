@@ -1,0 +1,47 @@
+
+// Reading the csv file as textFile
+
+spark.sparkContext.textFile("<data_file_path>")
+// This RDD will be read with each line represents a STRING.
+// Doesn't matter if you read a normal textfile or a csv file, it will be read a an RDD of String, each line will just be considered as a String.
+
+
+// Extracting the first element of each line
+rdd.map(line => line.split(",")).map(_.headOption)
+
+
+
+Example1:
+
+val CALIFORNIA_HOUSING_DATA = "file:///D:/NotebookShare/Material/Hadoop/Spark/Datasets/CaliforniaHousing/CaliforniaHousing/cal_housing.data"
+
+val diamond_rdd = spark.sparkContext.textFile("file:///D:/NotebookShare/Material/Hadoop/Spark/Datasets/DataBricksDatasets/Diamond/diamonds.csv")
+// org.apache.spark.rdd.RDD[String]
+
+
+val california_rdd = spark.sparkContext.textFile(CALIFORNIA_HOUSING_DATA)
+
+california_rdd.map(_.split(","))
+org.apache.spark.rdd.RDD[Array[String]] - After Spliting, the Raw RDD converted in a RDD of Array[String], each line is an Array of String
+
+
+california_rdd.map(_.split(",")).map(_.headOption)
+org.apache.spark.rdd.RDD[Option[String]]
+// _.headOption is used to select the first element each. And each element is not an Option()
+// Array[Option[String]] = Array(Some(-122.230000), Some(-122.220000), Some(-122.240000 ....)
+
+california_rdd.map(line => line.split(",")).flatMap(_.headOption)
+org.apache.spark.rdd.RDD[String]
+// flatMap will flatten the collection
+
+
+california_rdd.map(line => line.split(",")).map(array => array(0)) -- Will be exactly same as above (with flatten and _.headOption)
+// Array[String] = Array(-122.230000, -122.220000, -122.240000, -122.250000, - ....)
+
+
+
+california_rdd.map(line => line.split(",")).flatMap(_.lastOption)  -- Will flatten the collection
+
+california_rdd.map(line => line.split(",")).map(array => (array(0), array(1)))
+Array[(String, String)] 
+

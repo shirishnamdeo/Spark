@@ -1,5 +1,6 @@
 1. DataFrame from CSV files (when the file doesn't contain the Header/Schema)
 2. 
+3. Verify correctness of the DataFrame
 
 
 
@@ -26,17 +27,19 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.DoubleType
 
+
+// Example From DataBrick's Diamond data
 val schema = StructType(
 	Seq(
-		StructField(name| = "longitude", 		dataType = DoubleType, nullable = false),
+		StructField(name = "longitude", 		dataType = DoubleType, nullable = false),
 		StructField(name = "latitude", 			dataType = DoubleType, nullable = false),
 		StructField(name = "housingMediandge", 	dataType = DoubleType, nullable = false),
 		StructField(name = "totalRooms", 		dataType = DoubleType, nullable = false),
-		StructField(name = "totalBedrooms",  	dataType = DoubleType, nullable - false),
+		StructField(name = "totalBedrooms",  	dataType = DoubleType, nullable = false),
 		StructField(name = "population", 		dataType = DoubleType, nullable = false),
 		StructField(name = "households", 		dataType = DoubleType, nullable = false),
 		StructField(name = "medianIncome", 		dataType = DoubleType, nullable = false),
-		StructField(name = "medianHouseValue", 	dataType - DoubleType, nullable = false)
+		StructField(name = "medianHouseValue", 	dataType = DoubleType, nullable = false)
 	)
 
 
@@ -74,7 +77,10 @@ val dataframe_with_schema = spark.read.format("csv")
 
 
 
-// Verify correctness of the data
+
+
+3. Verify correctness of the DataFrame
+
 // When reading CSV files with a user-specified schema, it is possible that the actual data in the files does not match the specified schema. 
 // For example, a field containing name of the city will not parse as an integer. The consequences depend on the mode that the parser runs in:
 

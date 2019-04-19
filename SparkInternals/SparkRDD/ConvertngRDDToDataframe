@@ -1,0 +1,145 @@
+https://indatalabs.com/blog/data-engineering/convert-spark-rdd-to-dataframe-dataset	
+[https://www.programcreek.com/scala/org.apache.spark.sql.Row]
+[https://www.programcreek.com/scala/] -- Contains Spark-Scala Examples
+
+
+
+
+There are two ways to convert RDD into DataFrame
+	1. 	RDD.toDF
+		The toDF() command gives you the way to convert an RDD[Row] to a Dataframe.
+	2. spark.createDataFrame(data, schema)
+
+
+// Example:
+// Converting an RDD[String] (where fields are comma(,) separated into a DataFrame)
+
+
+val CALIFORNIA_HOUSING_DATA = "file:///D:/NotebookShare/Material/Hadoop/Spark/Datasets/CaliforniaHousing/CaliforniaHousing/cal_housing.data"
+val california_rdd = spark.sparkContext.textFile(CALIFORNIA_HOUSING_DATA)
+// org.apache.spark.rdd.RDD[String]
+
+
+california_rdd.map(_.split(","))
+org.apache.spark.rdd.RDD[Array[String]] - After Spliting, the Raw RDD converted in a RDD of Array[String], each line is an Array of String
+
+
+california_rdd.map(_.split(",")).map(_.headOption)
+org.apache.spark.rdd.RDD[Option[String]]
+// _.headOption is used to select the first element each. And each element is not an Option()
+
+
+
+
+import spark.implicits._
+
+california_rdd.toDF
+org.apache.spark.sql.DataFrame = [value: string]
+-- Will directly convert the RDD to DataFrame but all the columns will be merged into a single DataFrame column called 'value'.
+-- Why .toDF do not separate the RDD based on delimiter
+
+
+
+
+// Converting the RDd to RDD[Row], with internal splits and data type transformations
+// Why List type is needed in b/w?? ***
+
+import org.apache.spark.sql.Row
+
+california_rdd										-> org.apache.spark.rdd.RDD[String] 
+california_rdd.map(_.split(","))					-> org.apache.spark.rdd.RDD[Array[String]]
+
+california_rdd.map(_.split(",").to[List])			-> org.apache.spark.rdd.RDD[List[String]]
+california_rdd.map(_.split(",")).map(_.toList)		-> org.apache.spark.rdd.RDD[List[String]]
+
+california_rdd.map(_.split(",")).map(_.toList).map(_.map(_.toDouble))	-> org.apache.spark.rdd.RDD[List[Double]]
+california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList)			-> org.apache.spark.rdd.RDD[List[Double]]
+
+california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_))	-> org.apache.spark.rdd.RDD[org.apache.spark.sql.Row]
+
+
+
+
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.DoubleType
+
+
+// Example From DataBrick's Diamond data
+val schema = StructType(
+	Seq(
+		StructField(name = "longitude", 		dataType = DoubleType, nullable = false),
+		StructField(name = "latitude", 			dataType = DoubleType, nullable = false),
+		StructField(name = "housingMediandge", 	dataType = DoubleType, nullable = false),
+		StructField(name = "totalRooms", 		dataType = DoubleType, nullable = false),
+		StructField(name = "totalBedrooms",  	dataType = DoubleType, nullable = false),
+		StructField(name = "population", 		dataType = DoubleType, nullable = false),
+		StructField(name = "households", 		dataType = DoubleType, nullable = false),
+		StructField(name = "medianIncome", 		dataType = DoubleType, nullable = false),
+		StructField(name = "medianHouseValue", 	dataType = DoubleType, nullable = false)
+	)
+)
+
+
+
+// Method 1
+def string_to_row(line: List[String]): Row = Row(line(0).toDouble, line(1).toDouble, line(2).toDouble, line(3).toDouble, line(4).toDouble, line(5).toDouble, line(6).toDouble, line(7).toDouble, line(8).toDouble)
+
+val data = california_rdd.map(_.split(",")).map(_.toList).map(string_to_row)
+spark.createDataFrame(data, schema)
+
+
+
+
+// Method 2
+
+spark.createDataFrame(california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_)), schema)
+
+spark.createDataFrame(california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_)), schema).printSchema
+spark.createDataFrame(california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_)), schema).show()
+-- Classic example of Type-Safety. While creating the Dataframe there is no error, not even during the printSchema
+-- But when accessing the elements, we get the RUNTIME error
+
+
+
+california_rdd.map(_.split(",")).map(_.toList).map(string_to_row)
+california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_))
+// Both are of type -> org.apache.spark.rdd.RDD[org.apache.spark.sql.Row]
+
+california_rdd.map(_.split(",")).map(_.toList).map(string_to_row).collect()
+// Array([-122.23,37.88,41.0,880.0,129.0,322.0,126.0,8.3252,452600.0], [-122.2 ...
+
+california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(Row(_)).collect()
+// Array([List(-122.23, 37.88, 41.0, 880.0, 129.0, 322.0, 126.0, 8.3252, 452600.0)], [List...
+
+-- Although both the above RDD's are of same type (same signature), but the data representaton is DIFFERENT
+-- Former one just have Array of elements, while the later one has Array of List.
+
+
+def list_to_row(line: List[Double]): Row = Row(line(0), line(1), line(2), line(3), line(4), line(5), line(6), line(7), line(8))
+
+val data = california_rdd.map(_.split(",").map(_.toDouble)).map(_.toList).map(list_to_row)
+
+spark.createDataFrame(data, schema)
+spark.createDataFrame(data, schema).show() -- Works
+
+
+
+
+
+
+
+
+
+
+
+// Here you are going to create a function
+def f(x):
+    d = {}
+    for i in range(len(x)):
+        d[str(i)] = x[i]
+    return d
+
+# Now populate that
+
+df = rdd.map(lambda x: Row(**f(x))).toDF()

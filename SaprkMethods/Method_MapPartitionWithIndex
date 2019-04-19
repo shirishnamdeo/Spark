@@ -1,0 +1,18 @@
+[https://supergloo.com/spark-scala/apache-spark-examples-of-transformations/#mapPartitions]
+
+// Similar to mapPartitions but also provides a function with an Int value to indicate the index position of the partition.
+// mapPartitionsWithIndex is similar to mapPartitions() but it provides second parameter index which keeps the track of partition
+
+
+val data = sc.parallelize(1 to 9)
+
+data.mapPartitionsWithIndex( (index: Int, it: Iterator[Int]) => it.toList.map(x => index + ", "+x).iterator).collect
+Array[String] = Array(0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 7, 9)
+
+
+
+val data2 = sc.parallelize(1 to 9, 3)
+
+data2.mapPartitionsWithIndex( (index: Int, it: Iterator[Int]) => it.toList.map(x => index + ", "+x).iterator).collect
+Array[String] = Array(0, 1, 0, 2, 0, 3, 1, 4, 1, 5, 1, 6, 2, 7, 2, 8, 2, 9)
+-- Output Changes drastically!!
