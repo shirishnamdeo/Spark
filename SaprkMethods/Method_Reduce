@@ -26,7 +26,7 @@ x: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[13] at parallelize at <
 scala> x.collect
 res10: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
-scala> x.reduce((accum, n) => accum+n)
+scala> x.reduce((a, b) => a+b)
 res9: Int = 55
 
 

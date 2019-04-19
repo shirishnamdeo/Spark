@@ -37,5 +37,4 @@ scala> y.collect()
 res44: Array[String] = Array(spark, rdd, example, sample, example)
 
 
-
 val changeFlatMap = changeFileLower.flatMap("[a-z]+".r findAllIn _)
