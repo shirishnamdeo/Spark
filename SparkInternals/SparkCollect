@@ -1,0 +1,8 @@
+Collect (Action) - Return all the elements of the dataset as an array at the driver program. 
+This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
+
+Spark Docs
+To print all elements on the driver, one can use the collect() method to first bring the RDD to the driver node thus: rdd.collect().foreach(println).
+This can cause the driver to run out of memory, though, because collect() fetches the entire RDD to a single machine. 
+If you only need to print a few elements of the RDD, a safer approach is to use the take(): rdd.take(100).foreach(println).
+
