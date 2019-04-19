@@ -61,3 +61,46 @@ words.map( word => getElementsCount(word,broadCastDictionary)).reduceByKey((x,y)
 
 On collect, the result would be:
 	Array[(String, Int)] = Array((adjective,2), (noun,2), (unknown,3), (verb,2))
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+[http://apachesparkbook.blogspot.com/]
+
+Exmaple:
+
+scala> val data = spark.sparkContext.parallelize(1 to 10)
+
+scala> val localVal = 10
+localVal: Int = 10
+
+scala> data.map(x => x+localVal).foreach(println(_))
+
+scala> data.map(x => x*localVal).foreach(println(_))
+
+// Above, the same local variable is passed to the worker nodes for subsequent operations.
+
+
+
+// Sending a read-only value to Worker Noded using the Broadcast variable
+// Can be used to send large read-only values to worker-nodes effeciently
+
+scala> val boradcastVar = spark.sparkContext.broadcast(10)
+boradcastVar: org.apache.spark.broadcast.Broadcast[Int] = Broadcast(13)
+
+scala> data.map(x => x+bro).foreach(println(_))
+broadcast   bround
+
+scala> boradcastVar
+res28: org.apache.spark.broadcast.Broadcast[Int] = Broadcast(13)
+
+scala> boradcastVar.
+destroy   id   toString   unpersist   value
+
+scala> boradcastVar.value
+res29: Int = 10
+
+scala> data.map(x => x+boradcastVar.value).foreach(println(_))
+
+scala> data.map(x => x*boradcastVar.value).foreach(println(_))
+

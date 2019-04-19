@@ -12,7 +12,7 @@ In mapPartitions, instead of each element, the function is applied to each parti
 In mapPartitions, the performance is improved since the object creation is eliminated for each and every element as in map transformation.
 
 
-
+We get Iterator as an argument for mapPartition, through which we can iterate through all the elements in a Partition.
 
 val data = spark.sparkContext.parallelize(1 to 9, 3)
 
