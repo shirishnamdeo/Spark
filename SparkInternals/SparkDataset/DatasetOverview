@@ -1,0 +1,26 @@
+
+Dataset Overview
+[https://indatalabs.com/blog/data-engineering/convert-spark-rdd-to-dataframe-dataset]
+
+
+The DataFrame API is radically different from the RDD API because it is an API for building a relational query plan that Spark’s Catalyst optimizer 
+can then execute.
+
+The Dataset API aims to provide the best of both worlds: the familiar object-oriented programming style and compile-time type-safety of the RDD API 
+but with the performance benefits of the Catalyst query optimizer. Datasets also use the same efficient off-heap storage mechanism as the DataFrame 
+API.
+
+The idea behind Dataset is to provide an API that allows users to easily perform transformations on domain objects, while also providing the 
+performance and robustness advantages of the Spark SQL execution engine”. It represents competition to RDDs as they have overlapping functions.
+
+DataFrame is an alias to Dataset[Row]. 
+As we mentioned before, Datasets are optimized for typed engineering tasks, for which you want types checking and object-oriented programming 
+interface, while DataFrames are faster for interactive analytics and close to SQL style.
+
+About data serializing. The Dataset API has the concept of encoders which translate between JVM representations (objects) and Spark’s internal binary
+format. 
+Spark has built-in encoders that are very advanced in that they generate byte code to interact with off-heap data and provide on-demand access to 
+individual attributes without having to de-serialize an entire object.
+
+
+_____________________________________________________________________________________________________________________________________________________

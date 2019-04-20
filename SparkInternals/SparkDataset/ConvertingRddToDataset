@@ -1,0 +1,53 @@
+[https://indatalabs.com/blog/data-engineering/convert-spark-rdd-to-dataframe-dataset]
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+
+
+
+Let’s say we have a case class
+
+case class FeedbackRow(manager_name: String, response_time: Double, satisfaction_level: Double)
+You can create Dataset:
+
+By implicit conversion
+// create Dataset via implicit conversions
+val ds: Dataset[FeedbackRow] = dataFrame.as[FeedbackRow]
+val theSameDS = spark.read.parquet("example.parquet").as[FeedbackRow]
+By hand
+// create Dataset by hand
+val ds1: Dataset[FeedbackRow] = dataFrame.map {
+  row => FeedbackRow(row.getAs[String](0), row.getAs[Double](4), row.getAs[Double](5))
+}
+From collection
+import spark.implicits._
+
+case class Person(name: String, age: Long)
+
+val data = Seq(Person("Bob", 21), Person("Mandy", 22), Person("Julia", 19))
+val ds = spark.createDataset(data)
+
+From RDD
+val rdd = sc.textFile("data.txt")
+val ds = spark.createDataset(rdd)
+Here is an example, how to solve our sample business problem using the typed Dataset API.
+
+// custom average aggregator, to round the final value with a scale of 1
+class TypedScaledAverage[IN](f: IN => Double) extends TypedAverage[IN](f) {
+  override def finish(red: (Double, Long)): Double =
+    (red._1 / red._2 * 10).round / 10d
+}
+
+def scaledAvg[IN](f: IN => Double): TypedColumn[IN, Double] =
+  new TypedScaledAverage(f).toColumn
+  
+summed
+  .groupByKey(x => x.manager_name)
+  .agg(scaledAvg(_.response_time), scaledAvg(_.satisfaction_level))
+  .map { case (managerName, time, satisfaction) =>
+    FeedbackRow(managerName, time, satisfaction)
+  }.orderBy($"statisfaction_level")
+
+
+
