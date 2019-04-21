@@ -24,3 +24,6 @@ individual attributes without having to de-serialize an entire object.
 
 
 _____________________________________________________________________________________________________________________________________________________
+
+DataSet API 
+[https://jaceklaskowski.gitbooks.io/mastering-spark-sql/spark-sql-dataset-operators.html]

@@ -1,0 +1,140 @@
+
+Method1:
+
+val df = Seq("hello", "world!").zipWithIndex.map(_.swap).toDF("id", "token")
+val ds = df.as[(Int, String)]
+
+scala> ds.show()
++---+------+
+| id| token|
++---+------+
+|  0| hello|
+|  1|world!|
++---+------+
+
+
+// It's more helpful to have a case class for the conversion
+case class Sales(id: String, vl: Int)
+val sales = Seq(("idA", 2), ("idA", 4), ("idB", 3), ("idB",5),("idB",10),("idC",7)).toDF("id", "vl").as[Sales]
+
+scala> sales.show()
++---+---+
+| id| vl|
++---+---+
+|idA|  2|
+|idA|  4|
+|idB|  3|
+|idB|  5|
+|idB| 10|
+|idC|  7|
++---+---+
+
+
+val countsTB = sales.createOrReplaceTempView("Sales")
+val counts = spark.sql("SELECT id, count(vl), sum(vl) from Sales GROUP BY id")
+
+
+
+
+
+Method3:
+
+final case class Sentence(id: Long, text: String)
+val sentences = Seq(Sentence(0, "hello world"), Sentence(1, "witaj swiecie")).toDS
+
+scala> sentences.show()
++---+-------------+
+| id|         text|
++---+-------------+
+|  0|  hello world|
+|  1|witaj swiecie|
++---+-------------+
+
+
+// text is the column name in above dataset
+scala> sentences.map(s => s.text.split("\\s+")).show
++----------------+
+|           value|
++----------------+
+|  [hello, world]|
+|[witaj, swiecie]|
++----------------+
+
+
+scala> sentences.flatMap(s => s.text.split("\\s+")).show
++-------+
+|  value|
++-------+
+|  hello|
+|  world|
+|  witaj|
+|swiecie|
++-------+
+
+
+
+
+scala> val ds = spark.range(5)
+ds: org.apache.spark.sql.Dataset[Long] = [id: bigint]
+
+scala> ds
+res12: org.apache.spark.sql.Dataset[Long] = [id: bigint]
+
+scala> ds.show()
++---+
+| id|
++---+
+|  0|
+|  1|
+|  2|
+|  3|
+|  4|
++---+
+
+
+scala>
+
+scala> ds.selectExpr("rand() as random").show
++-------------------+
+|             random|
++-------------------+
+|0.16772470909290482|
+| 0.3176986560229311|
+|0.19624651238254243|
+| 0.4478100128299365|
+| 0.8116193331634228|
++-------------------+
+
+
+// Internally, it executes select with every expression in exprs mapped to Column (using SparkSqlParser.parseExpression).
+
+scala> ds.select(expr("rand() as random")).show
+scala> ds.select(expr("rand() as random")).show
++--------------------+
+|              random|
++--------------------+
+|  0.6334195477322493|
+| 0.39429266147404973|
+| 0.19448367944270484|
+| 0.04013479288774602|
+|0.012489615775575613|
++--------------------+
+
+
+val ds = spark.range(3)
+val plan = ds.queryExecution.logical
+scala> println(plan.numberedTreeString)
+00 Range (0, 3, step=1, splits=Some(8))
+
+// Attach a hint
+val dsHinted = ds.hint("myHint", 100, true)
+val plan = dsHinted.queryExecution.logical
+
+scala> println(plan.numberedTreeString)
+00 'UnresolvedHint myHint, [100, true]
+01 +- Range (0, 3, step=1, splits=Some(8))
+
+
+
+
+

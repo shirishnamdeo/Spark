@@ -39,7 +39,7 @@ res13: Array[(String, Int)] = Array((a,3), (b,5))
 
 Example2:
 
-scala> val y = x.reduceByKey((accum, n) => (accum * n))
+scala> val y = x.reduceByKey((a, b) => (a * b))
 y: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[1] at reduceByKey at <console>:25
 
 scala> y.collect()

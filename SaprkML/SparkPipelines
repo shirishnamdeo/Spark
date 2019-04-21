@@ -1,0 +1,45 @@
+[https://spark.apache.org/docs/2.4.0/ml-pipeline.html]
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+[https://spark.apache.org/docs/2.4.0/ml-pipeline.html#how-it-works]
+
+
+A Pipeline is specified as a sequence of stages, and each stage is either a Transformer or an Estimator. 
+These stages are run in order, and the input DataFrame is transformed as it passes through each stage. 
+
+For Transformer stages, the transform() method is called on the DataFrame. 
+For Estimator stages, the fit() method is called to produce a Transformer (which becomes part of the PipelineModel, or fitted Pipeline), and that 
+Transformer’s transform() method is called on the DataFrame.
+
+
+Tokenizer -> HashingTF -> LogisticRegression
+
+Above, the top row represents a Pipeline with three stages. 
+The first two (Tokenizer and HashingTF) are Transformers (blue), and the third (LogisticRegression) is an Estimator (red). 
+The bottom row represents data flowing through the pipeline, where cylinders indicate DataFrames. 
+
+The Pipeline.fit() method is called on the original DataFrame, which has raw text documents and labels. 
+The Tokenizer.transform() method splits the raw text documents into words, adding a new column with words to the DataFrame. 
+The HashingTF.transform() method converts the words column into feature vectors, adding a new column with those vectors to the DataFrame. 
+
+Now, since LogisticRegression is an Estimator, the Pipeline first calls LogisticRegression.fit() to produce a LogisticRegressionModel. 
+If the Pipeline had more Estimators, it would call the LogisticRegressionModel’s transform() method on the DataFrame before passing the DataFrame to
+the next stage.
+
+
+A Pipeline is an Estimator. Thus, after a Pipeline’s fit() method runs, it produces a PipelineModel, which is a Transformer. 
+This PipelineModel is used at test time; the figure below illustrates this usage.
+
+
+In the figure above, the PipelineModel has the same number of stages as the original Pipeline, but all Estimators in the original Pipeline have 
+become Transformers. 
+When the PipelineModel’s transform() method is called on a test dataset, the data are passed through the fitted pipeline in order. 
+Each stage’s transform() method updates the dataset and passes it to the next stage.
+
+Pipelines and PipelineModels help to ensure that training and test data go through identical feature processing steps.
+
+
+
+_____________________________________________________________________________________________________________________________________________________

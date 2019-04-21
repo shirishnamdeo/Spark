@@ -1,0 +1,54 @@
+[https://www.javaworld.com/article/3184109/aggregating-with-apache-spark.html?page=2]
+
+
+Issue with Map-Reduce
+
+The MapReduce solution achieves scalability, but scalability is relative. 
+We were able to scale our application to find the sum of the number of flowers for a trillion or more pickers. 
+But what if we wanted to perform another operation, such as finding the standard deviation among the number of flowers picked, or the mean or mode 
+of these numbers? We would need to write a new MapReduce program for each computation.
+
+
+Every MapReduce application reads input data individually, and writes its output back to HDFS. 
+As a result, MapReduce is made for acyclic data flow models, a paradigm that doesn't allow for iterative querying or repeated executions on results 
+or inputs.
+
+
+We also don't necessarily want to be bound by reading large data sets from HDFS, given that disk I/O is very expensive and bandwidth is limited. 
+Ideally, we want an in-memory structure partitioned across commodity machines, which will enable us to do repeated querying without reloading from 
+disk.
+
+
+In addition to more composable code, we want a language that supports features like cohesion, loose coupling, and orthogonality--meaning that a 
+relatively small set of primitive constructs can be combined in a relatively small number of ways to build the control and data structures of the 
+language.
+
+
+
+** We've already noted that MapReduce doesn't have the flexibility needed to create data flows.
+The map is executed on individual blocks, its output is spilled to a circular buffer, and then it's shuffled and sorted for the reducer to pick up. 
+Even if we use a ChainMapper or a ChainReducer, the model is [MAP+ / REDUCE MAP*], where + indicates one or more relevant tasks and * indicates 
+zero or more.
+
+
+** As a result, we can never have a model that executes map->  shuffle->reduce->reduce, although this is an important requirement for iterative 
+algorithms. 
+If you want to set up something iterative, your only option is to schedule map->shuffle->reduce as your first job, followed by map-> shuffle->reduce.
+Since jobs in MapReduce are mutually exclusive, the first job has no idea whether a second job will follow.
+
+
+
+
+Now let's analyze the same solution in Spark. You can see the data flow illustrated on the right side of Figure 7. 
+First, note that there are no maps between reducers (i.e., no blue circles) for the Spark solution in Figure 7. 
+That means output from the first MapReduce can be directly fed to the second set of reducers without an explicit map process.
+
+
+** Second, there is no HDFS file system between operations.
+Instead, Spark leverages memory as long as the data fits it, which greatly reduces the cost for disk I/O. 
+
+
+Most importantly, note the part of the diagram marked STAGE 1, where the yellow circles 1->2->4 and 3->5 are mutually exclusive. 
+These can be simple transformations. Most importantly, Spark can intelligently connect the multiple stages into an execution pipeline, deciding 
+which stages should run in parallel. This powerful design supports lightning-fast cluster computing in Spark.
+

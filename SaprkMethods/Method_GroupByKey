@@ -47,3 +47,16 @@ res4: Int = 3
 
 
 
+
+Example2:
+
+val sales = sc.parallelize( Seq( ("idA", 2), ("idA", 4), ("idB", 3), ("idB",5),("idB",10),("idC",7) ))
+val counts = sales.groupByKey().mapValues(sq => (sq.size,sq.sum)) 
+
+scala> counts.collect().foreach(println(_))
+(idC,(1,7))
+(idA,(2,6))
+(idB,(3,18))
+
+
+

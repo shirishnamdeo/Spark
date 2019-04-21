@@ -1,20 +1,89 @@
 [https://towardsdatascience.com/feature-encoding-with-spark-2-3-0-part-1-9ede45562740]
+[https://towardsdatascience.com/feature-encoding-made-simple-with-spark-2-3-0-part-2-5bfc869a809a]
+[https://community.hortonworks.com/articles/75295/spark-categorical-data-transformation.html]
 
 
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.PipelineModel
 
-import org.apache.spark.ml.feature.StringIndexer
-
+1. StringIndexer
+2. OneHotEncoder
+3. VectorAssembler
+4. VectorIndexer
+5. StandardScaler
+6. Normalizer
+7. MinMaxScaler
+8. Bucketizer
+9. QuantileDiscretizer
 
 _____________________________________________________________________________________________________________________________________________________
 
 1. String Indexer
 
+// StringIndexer - Index categorial features
+
+// The StringIndex function maps a string column of labels to an ML column of label indices. 
+// In our example, this code will traverse through the dataframe and create a matching index for each of the values in the fruit name column.
+
+// String Indexer encodes a column of string labels/categories to a column of indices. 
+// The ordering of the indices is done on the basis of popularity and the range is [0, numOfLabels).
+
+
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.feature.StringIndexer
+
+
+
+// Method1 (without Pipeline)
+
+// Just defining the indexer object. It will be applied later to the dataframe using .transform() method
+val indexer = new StringIndexer()
+    .setInputCol("fruit")
+    .setOutputCol("fruitIndex")
+    .fit(df)
+
+scala> indexer
+res86: org.apache.spark.ml.feature.StringIndexerModel = strIdx_f7684b3d3d2f
+
+scala> indexer.labels
+res88: Array[String] = Array(coconut, banana, apple)
+
+scala> indexer.getOutputCol
+res92: String = fruitIndex
+
+
+
+
+val indexed = indexer.transform(df)
+// That is StringIndexer class has the fit() and transform() methods.
+
+scala> indexed.printSchema
+root
+ |-- id: integer (nullable = false)
+ |-- fruit: string (nullable = true)
+ |-- fruitIndex: double (nullable = false)
+
+
+scala> indexed.show()
++---+-------+----------+
+| id|  fruit|fruitIndex|
++---+-------+----------+
+|  0|  apple|       2.0|
+|  1| banana|       1.0|
+|  2|coconut|       0.0|
+|  1| banana|       1.0|
+|  2|coconut|       0.0|
++---+-------+----------+
+
+// coconut is given index 0, because it is most popular.
+
+
+
+
+
+// Method2 (with Pipeline)
+
 val my_pipeline = new Pipeline("my_pipeline")
 // Note the uid here "my_pipeline" is Optional
-
-
 
 
 val df = spark.createDataFrame(Seq(
@@ -53,7 +122,7 @@ val encodedFeatures = features.flatMap({ name =>
 val pipeline = new Pipeline().setStages(encodedFeatures)
 
 val indexer_model = pipeline.fit(df)
-res17: org.apache.spark.ml.PipelineModel = pipeline_2db0a310ac33
+// res17: org.apache.spark.ml.PipelineModel = pipeline_2db0a310ac33
 
 
 // Now we will apply all the transformation stages in pipeline to our dataframe
@@ -76,12 +145,60 @@ scala> df_transformed.show()
 
 _____________________________________________________________________________________________________________________________________________________
 
-2. One Hot Encoding
+2. OneHotEncoder
+
+//  OneHotEncoder - Encode to one hot vectors
+
+// One hot encoder maps the label indices to a binary vector representation with at the most a single one-value. 
+// These methods are generally used when we need to use categorical features but the algorithm expects continuous features.
+
+// The spark one hot encoder takes the indexed label/category from the string indexer and then encodes it into a sparse vector. 
+// This is slightly different from the usual dummy column creation style. 
+
+
+// The OneHotEncoder function maps a column of category indices to a column of binary vectors. 
+// In our example, this code will convert the values into a binary vector and ensure only one of them is set to true or hot.
+
 
 
 import org.apache.spark.ml.feature.OneHotEncoder
 import org.apache.spark.ml.feature.OneHotEncoderEstimator
 
+
+
+
+// Method1: (without Pipeline)
+
+val encoder = new OneHotEncoder()
+    .setInputCol("fruitIndex")
+    .setOutputCol("fruitVec")
+ 
+val encoded = encoder.transform(indexed)
+encoded: org.apache.spark.sql.DataFrame = [id: int, fruit: string ... 2 more fields]
+
+scala> encoded.printSchema
+root
+ |-- id: integer (nullable = false)
+ |-- fruit: string (nullable = true)
+ |-- fruitIndex: double (nullable = false)
+ |-- fruitVec: vector (nullable = true)
+
+
+scala> encoded.show()
++---+-------+----------+-------------+
+| id|  fruit|fruitIndex|     fruitVec|
++---+-------+----------+-------------+
+|  0|  apple|       2.0|    (2,[],[])|
+|  1| banana|       1.0|(2,[1],[1.0])|
+|  2|coconut|       0.0|(2,[0],[1.0])|
+|  1| banana|       1.0|(2,[1],[1.0])|
+|  2|coconut|       0.0|(2,[0],[1.0])|
++---+-------+----------+-------------+
+
+
+
+
+// Method2 (with Pipeline)
 
 
 val encodedFeatures = features.flatMap({ name => 
@@ -552,11 +669,4 @@ scala> result.select($"citric_acid", $"quantileBins").show(10)
 
 
 _____________________________________________________________________________________________________________________________________________________
-
-
-
-
-
-
-
 

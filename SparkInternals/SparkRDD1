@@ -1,5 +1,15 @@
 Web Reference : https://www.dezyre.com/article/working-with-spark-rdd-for-fast-data-processing/273
 
+An RDD is a pointer for a collection of individual memory units. 
+When you combine multiple RDDs, you get the entire object stored in Spark
+
+If you apply a transformation or action on an RDD, all the individual partitions across the cluster are affected
+
+RDDs can handle any type of data, which makes Spark very popular.
+There is one drawback, however: operations on RDD must be generic in order to be applicable to any kind of data, which limits the number and type of available operations.
+
+
+
 Spark revolves around the concept of a resilient distributed dataset (RDD), which is a fault-tolerant collection of elements that can be operated on in parallel
 There are two ways to create RDDs: parallelizing an existing collection in your driver program, or referencing a dataset in an external storage system, such as a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat.
 

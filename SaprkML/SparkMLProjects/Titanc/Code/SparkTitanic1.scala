@@ -106,15 +106,19 @@ val train_df_fixNull = train_df.na.fill(Map("Age" -> meanValue))
 
 
 
-val splits = train_df_fixNull.randomSplit(Array(0.7, 0.3))
-//  Array[org.apache.spark.sql.Dataset[org.apache.spark.sql.Row]]
+val splits = train_df_fixNull.randomSplit(Array(0.7, 0.3), seed=42)
+// Array[org.apache.spark.sql.Dataset[org.apache.spark.sql.Row]]
+// Why this randomSplit is giving different count every time. After specifying the seed, it become constant
 
-scala> val train_split_ds = splits(0).withColumnRenamed("Survived", "label")
+scala> splits.size
+// res1: Int = 2
+
+val train_split_ds = splits(0).withColumnRenamed("Survived", "label")
 // train_split_ds: org.apache.spark.sql.Dataset[org.apache.spark.sql.Row] = [PassengerId: int, Survived: int ... 10 more fields]
 // DS.withColumnRenamed("Survived", "label")
 // "label" is the column name needed for the Machine Learning ML model.
 
-scala> train_split_ds.count()
+train_split_ds.count()
 res62: Long = 620
 
 scala> val crossVL_split_ds = splits(1)
@@ -132,9 +136,7 @@ ________________________________________________________________________________
 
 
 def handleCategorical(column: String): Array[PipelineStage] = {
-  val stringIndexer = new StringIndexer().setInputCol(column)
-    .setOutputCol(s"${column}_index")
-    .setHandleInvalid("skip")
+  val stringIndexer = new StringIndexer().setInputCol(column).setOutputCol(s"${column}_index").setHandleInvalid("skip")
   val oneHot = new OneHotEncoder().setInputCol(s"${column}_index").setOutputCol(s"${column}_onehot")
   Array(stringIndexer, oneHot)
 }
@@ -143,6 +145,59 @@ def handleCategorical(column: String): Array[PipelineStage] = {
 val genderStages = handleCategorical("Sex")
 val embarkedStages = handleCategorical("Embarked")
 val pClassStages = handleCategorical("Pclass")
+
+
+
+___________________________________________________________________________________________________
+
+scala> genderStages
+// res32: Array[org.apache.spark.ml.PipelineStage] = Array(strIdx_48d8c2280d07, oneHot_85bf35593f77)
+// Note the return datatype, also note that each of them is an array (which is required by the Pipeline's setStages method)
+
+scala> genderStages(0).explainParams()
+// res57: String =
+// handleInvalid: 
+//     How to handle invalid data (unseen labels or NULL values). Options are 'skip' (filter out rows with invalid data), error (throw an error), or 
+//     'keep' (put invalid data in a special additional bucket, at index numLabels). (default: error, current: skip)
+
+// inputCol: 
+//     input column name (current: Sex)
+
+// outputCol: 
+//     output column name (default: strIdx_bab6ab8114d2__output, current: Sex_index)
+
+// stringOrderType: 
+//     How to order labels of string column. The first label after ordering is assigned an index of 0. 
+//     Supported options: frequencyDesc, frequencyAsc, alphabetDesc, alphabetAsc. (default: frequencyDesc)
+
+
+
+scala> (genderStages(0), genderStages(1))
+// res35: (org.apache.spark.ml.PipelineStage, org.apache.spark.ml.PipelineStage) = (strIdx_48d8c2280d07,oneHot_85bf35593f77)
+
+genderStages(0).fit(train_split_ds)
+
+
+val column = "Sex"
+val stringIndexer_dummy = new StringIndexer().setInputCol(column).setOutputCol(s"${column}_index").setHandleInvalid("skip")
+// res48: org.apache.spark.ml.feature.StringIndexer = strIdx_ccd5c88be596
+// The above code works, but why genderStages(0) is not a StringIndexer class object?? ***
+
+stringIndexer_dummy.fit(train_split_ds).transform(train_split_ds).show()
+
+
+scala> stringIndexer_dummy.asInstanceOf[PipelineStage]
+// res51: org.apache.spark.ml.PipelineStage = strIdx_ccd5c88be596 -- Its because it has been casted int PipelineStage object.
+// Can we cast it back.
+
+scala> genderStages(0).asInstanceOf[StringIndexer]
+res52: org.apache.spark.ml.feature.StringIndexer = strIdx_bab6ab8114d2
+
+genderStages(0).asInstanceOf[StringIndexer].fit(train_split_ds).transform(train_split_ds).show 
+// Perfect!!!
+
+___________________________________________________________________________________________________
+
 
 
 
@@ -158,6 +213,7 @@ val randomForestClassifier = new RandomForestClassifier()
 //pipeline
 val preProcessStages = genderStages ++ embarkedStages ++ pClassStages ++ Array(vectorAssembler)
 // res73: Array[org.apache.spark.ml.PipelineStage] = Array(strIdx_078494c64b8b, oneHot_29f34fe4abe5, strIdx_28d8c525a3fe, oneHot_99645d8fc5ce, strIdx_f15353316af8, oneHot_a5d344f16f11, vecAssembler_4f6473643316)
+
 
 val pipeline = new Pipeline().setStages(preProcessStages ++ Array(randomForestClassifier))
 // res74: org.apache.spark.ml.Pipeline = pipeline_77518e4550ca

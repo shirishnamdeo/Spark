@@ -19,6 +19,13 @@ res6: Array[(Char, Iterable[String])] = Array((T,CompactBuffer(Tina, Thomas)), (
 -- Group the arrays elements based on the frist character.
 
 
+scala> x.groupBy(w => w.charAt(0)).keys.collect()
+res22: Array[Char] = Array(T, C, J)
+
+scala> x.groupBy(w => w.charAt(0)).values.collect()
+res24: Array[Iterable[String]] = Array(CompactBuffer(Tina, Thomas), CompactBuffer(Cory, Christine), CompactBuffer(Joseph, Jimmy, James, Jackeline, Juan))
+
+
 Example2:
 
 scala> x.groupBy(w => w.length).collect()
