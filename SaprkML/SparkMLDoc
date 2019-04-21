@@ -9,7 +9,7 @@ Utilities: linear algebra, statistics, data handling, etc.
 
 
 Spark 2.4.0 -> Announcement: DataFrame-based API is primary API.
-(Spark RDD based API is not in maintenance mode and will be depreciated and will be removed in Spark 3.0)
+(Spark RDD based API is now in maintenance mode and will be depreciated and will be removed in Spark 3.0)
 
 
 RDD API -> 		 org.apache.spark.mllib
