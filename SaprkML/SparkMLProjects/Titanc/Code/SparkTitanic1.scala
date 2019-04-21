@@ -27,6 +27,7 @@ object MLUtils {
     val rdd = df.select(predictCol,label).rdd.map(row ⇒ (row.getDouble(0), row.getInt(1).toDouble))
     new MulticlassMetrics(rdd).accuracy
   }
+
   def recall(df: DataFrame, labelCol: String, predictCol: String, labelValue:Double) = {
     val rdd = df.select(predictCol,labelCol).rdd.map(row ⇒ (row.getDouble(0), row.getInt(1).toDouble))
     new MulticlassMetrics(rdd).recall(labelValue)
@@ -243,7 +244,7 @@ ________________________________________________________________________________
 // by spark ML to search through these parameter space to come up with best parameters for our data.
 
 
-//  Specifying the parameter grid
+// Specifying the parameter grid
 // The below are the parameters which we want to search for.
 
 val paramMap = new ParamGridBuilder()
