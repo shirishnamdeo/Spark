@@ -152,18 +152,15 @@ https://github.com/apache/spark/blob/branch-2.1/sql/core/src/main/scala/org/apac
 
 // DataFrame .options()
 	.option("charset", "utf-8")
-	.option("header", "true/false")
+	.option("header", "true")
 	.option("quote", "\"")~
 	.option("delimiter", ",")
-	.option("mode", "PERMISSIVE/DROPMALFORMED/FAILFAST")
-	.option("inferSchema", "true")
-	.option("dateFormat", "yyyyMMdd")
 
 
 
 
-https://stackoverflow.com/questions/46529404/how-to-force-inferschema-for-csv-to-consider-integers-as-dates-with-dateformat
+	.format("com.databricks.spark.csv")
 
 
 
-
+	

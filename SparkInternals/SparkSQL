@@ -506,3 +506,13 @@ Type-Safe User-Defined Aggregate Functions:
 
 
 
+-------------------------
+
+
+people.filter("age > 30")
+  .join(department, people("deptId") === department("id"))
+  .groupBy(department("name"), "gender")
+  .agg(avg(people("salary")), max(people("age")))
+
+
+  

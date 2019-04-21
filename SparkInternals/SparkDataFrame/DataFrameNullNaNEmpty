@@ -210,3 +210,29 @@ res58: Long = 891
 scala> data_frame.select("age").na.fill(0).filter("age is null").count()
 res61: Long = 0
 
+
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+Replacing (Creating a New DataFrame) Nulls, Nan's
+
+[https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameNaFunctions]
+
+
+
+def fill(valueMap: Map[String, Any]): DataFrame
+(Scala-specific) Returns a new DataFrame that replaces null values.
+
+The key of the map is the column name, and the value of the map is the replacement value. 
+The value must be of the following type: Int, Long, Float, Double, String, Boolean. 
+Replacement values are cast to the column data type.
+
+For example, the following replaces null values in column "A" with string "unknown", and null values in column "B" with numeric value 1.0.
+
+df.na.fill(Map(
+  "A" -> "unknown",
+  "B" -> 1.0
+))
+
+
