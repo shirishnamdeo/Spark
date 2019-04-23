@@ -10,6 +10,14 @@ ________________________________________________________________________________
 // toDF() provides a concise syntax for creating DataFrames and can be accessed after importing Spark implicits.
 
 
+// Important Note ***
+// .toDF() method works if RDD is of type RDD[INT], RDD[Long], RDD[String] and RDD[T <: scala.Product]. 
+// Note: "<:"" means T must be sub type of scala.Product in which case, we can use either a Case class or a Tuple. 
+// This is because, Product is the super class of both Case class and Tuple.
+
+// .toDF works only if collection is composed of Products (i.e., case classes or tuples)
+
+    
 
 import spark.implicits._
 

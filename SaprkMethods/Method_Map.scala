@@ -1,5 +1,29 @@
 
 
+_____________________________________________________________________________________________________________________________________________________
+
+***
+
+Why are the curly brackets used and not the regular parentheses in the map?
+[Code from CreatingDataFrameFromStrings.scala]
+
+val dataFrame1 = spark.sparkContext.parallelize(stringData, 4).
+    map(splitAndStrip).
+    map{
+        case Row(empno: Int,ename: String,job: String,mgr: Int,hiredate: String,sal: Double,comm: Double,deptno: Int) =>
+                    (empno, ename, job, mgr, hiredate, sal, comm, deptno)
+    }.toDF(colList: _*)
+
+
+Ans: 
+	In general, there are many cases where we should prefer curly braces (e.g. multiline expressions, for comprehensions) etc. 
+	In this case it’s not just curly braces, instead of parentheses, it’s curly braces excluding omited parentheses. 
+	The curly braces here allows us to write pattern matching anonymous function inside map/filter, whereas parenthesis won’t.
+
+_____________________________________________________________________________________________________________________________________________________
+
+
+
 Map is a transformation operation in Spark hence it is lazily evaluated
 Map accepts a function argument, and apply this function to each element of the Source RDD elements.
 Map is a narrow operation as it is not shuffling data from one partition to multiple partitions

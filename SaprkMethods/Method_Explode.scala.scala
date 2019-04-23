@@ -156,3 +156,8 @@ scala> data3.withColumn("newColumn", explode(array("col3", "col4"))).show()
 // Here only the specified column has exploded
 
 
+_____________________________________________________________________________________________________________________________________________________
+
+val df = sc.parallelize(Seq((1, Seq(2,3,4), Seq(5,6,7)), (2, Seq(3,4,5), Seq(6,7,8)), (3, Seq(4,5,6), Seq(7,8,9)))).toDF(“a”, “b”, “c”)
+val df1 = df.select(df(“a”),explode(df(“b”)).alias(“b_columns”),df(“c”))
+val df2 = df1.select(df1(“a”),df1(“b_columns”),explode(df1(“c”).alias(“c_columns”))).show()
