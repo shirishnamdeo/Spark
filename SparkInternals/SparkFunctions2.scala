@@ -100,14 +100,27 @@ scala> dataFrame.show()
 +--------+---------+---------+--------+
 
 
-genericFunction(dataFrame)
-
-
-val columnList = dataFrame.columns.filter(!_.contains("<column_to_exclude>"))
-
 val result_df = genericFunction(dataFrame, functionArray, columnList)
-result_df.printSchema
-result_df.show()
+
+
+scala> result_df.printSchema
+root
+ |-- column_names: string (nullable = true)
+ |-- count_null: long (nullable = true)
+ |-- count_nan: long (nullable = true)
+ |-- count_empty_string: long (nullable = true)
+ |-- count_single_space: long (nullable = true)
+
+
+scala> result_df.show()
++------------+----------+---------+------------------+------------------+
+|column_names|count_null|count_nan|count_empty_string|count_single_space|
++------------+----------+---------+------------------+------------------+
+|    colName1|         0|        0|                 0|                 0|
+|    colName2|         1|        0|                 1|                 0|
+|    colName3|         0|        0|                 0|                 1|
+|    colName4|         0|        0|                 0|                 0|
++------------+----------+---------+------------------+------------------+
 
 
 
