@@ -46,7 +46,7 @@ def genericFunction(dataFrame: DataFrame, functionArray:Array[((DataFrame, Strin
     val result_df_colTypes = Seq("string") ++ function_dtypes.toSeq
     val result_array = columnList.map(col => Array(col) ++ function_objects.map(func => func(dataFrame, col) ))
     val selectExprs = 0 until (functionArray.size + 1) map(i => $"temp".getItem(i).as(s"col$i"))
-    val result_df = result_array.toSeq.toDF.withColumnRenamed("value” , “temp").select(selectExprs:_*).toDF(result_df_colNames: _*)
+    val result_df = result_array.toSeq.toDF.withColumnRenamed("value" , "temp").select(selectExprs:_*).toDF(result_df_colNames: _*)
     val result_df2 = result_df.select((result_df_colNames zip result_df_colTypes).toSeq.map{case (column_name, 
     column_type) => col(column_name).cast(column_type)}: _*)
     result_df2
