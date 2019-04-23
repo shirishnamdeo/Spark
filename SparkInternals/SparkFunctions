@@ -58,3 +58,8 @@ def count_single_space(data_frame:org.apache.spark.sql.DataFrame) : org.apache.s
     val df_columns = data_frame.columns
     df_columns.map(col => (col, data_frame.select(col).filter(data_frame(col) === " ").count)).toMap.toSeq.toDF("column_name","single_space_count")
 }
+
+
+
+
+
