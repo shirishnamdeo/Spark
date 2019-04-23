@@ -53,6 +53,11 @@ def genericFunction(dataFrame: DataFrame, functionArray:Array[((DataFrame, Strin
 }
 
 
+// Improvement: 
+// dataDF2.select(dataDF2.columns.filter(colName => colsToSelect.contains(colName)).map(colName => new Column(colName)): _*).show()
+
+
+
 _____________________________________________________________________________________________________________________________________________________
 
 
@@ -124,30 +129,158 @@ scala> result_df.show()
 
 
 
-
-
-
-
-
-
+_____________________________________________________________________________________________________________________________________________________
 _____________________________________________________________________________________________________________________________________________________
 
 
+[Development Phase]
 
-val data = Seq(
-    (1, "col2_val1", null, "col4_val1", 50),
-    (2, "col2_val2", 4,    "col4_val1", 12),
-    (3, "col2_val3", " ",  "col4_val1", null),
-    (4, null,        1234, "col4_val1", Double.NaN),
-    (5, "",          null, "col4_val1", 55)
+https://stackoverflow.com/questions/41341724/spark-scala-column-type-determine
+
+
+// GenericFunction Long type Variant
+def genericFunction(dataFrame: DataFrame, functionArray:Array[(DataFrame, String) -> Long], columnList:Array[String]) = {
+    columList.map(col => Array(col) ++ functionArray.map(func => func(dataFrame, col) ))
+    // functionArray is an array, thus it will return an Array of values (presuming that func will return raw values)
+}
+
+
+genericFunction(dataFrame, Array(func_count_null), dataFrame.columns)
+genericFunction(dataFrame, Array(func_count_null, func_count_nan), dataFrame.columns.filter(!_.contains("ingestion_ts")))
+
+
+
+
+// GenericFunction String type Variant
+def genericFunction(dataFrame: DataFrame, functionArray:Array[(DataFrame, String) -> String], columnList:Array[String]) = {
+    columList.map(col => Array(col) ++ functionArray.map(func => func(dataFrame, col) ))
+    // functionArray is an array, thus it will return an Array of values (presuming that func will return raw values)
+}
+
+genericFunction(dataFrame, Array(func_count_null, func_count_nan), dataFrame.columns.filter(!_.contains("ingestion_ts")))
+-- Returns: Array[Array[String]]
+
+
+-- ERROR in converting into dataframe
+scala> Array(Array("stringl", 0, 0), Array("string2", 0, 0))
+res38: Array[Array[Any]] = Array(Array(stringl, 0, 0), Array(string2, 0, 0))
+-- Above, is the pain point. The Output of the genericFunction is Array[Array[Any]], to which we are not able to
+type cast into proper format
+-- to be moulded into a DataFrame
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+val a = genericFunction(df, Array(func_count_null, func_count_nan, func_count_empty_string,
+func_count_single_space), df.columns.filter(!_.contains("ingestion_ts")) )
+-- Array[Array[String]]
+
+val selectExprs = 0 until 5 map (i => $"temp".getItem(i).as(s"col$i"))
+a.toSeq.toDF.withColumnRenamed("value” , “temp").select(selectExprs:_*).show(50)
+
+
+
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+ 
+val result_df = genericFunction(dataFrame, functionArray, columnList)
+result_df.printSchema
+result_df.show(50)
+
+
+import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.DoubleType
+
+ 
+
+function_names.foreach(name => result_df.withColumn("_"+name, result_df.col(name).cast(DoubleType)).drop(name) .withColumnRenamed("_"+name, name))
+// How to keep iteratively apply this so to change the DataFrame itselt
+
+val newNames = Seq("id", "x1", "x2", "x3", "x4")
+val dfRenamed = result_df.toDF(newNames: _*)
+// The above wilecard characted can only be passed in a parameter
+result_df.select(function_names.map{ column_name => col(column_name).cast("double")}: _*).printSchema
+
+result_df.select((result_df_colNames zip result_df_colTypes).map{(column_name, column_type) => col(column_name).cast(column_type)}: _*).printSchema
+
+
+
+_________________________________________________________________________________________
+
+
+val df = sc.parallelize(Seq(
+  ("foo", "1.0", "2", "true"),
+  ("bar", "-1.0", "5", "false")
+)).toDF("v", "x", "y", "z")
+
+val types = Seq(
+  ("v", "string"), ("x", "double"), ("y", "bigint"), ("z", "boolean")
 )
-// data: Seq[(Int, String, Any, String, Any)] = 
-//  List((1,col2_val1,null,col4_val1,50), (2,col2_val2,4,col4_val1,12), (3,col2_val3," ",col4_val1,null), (4,null,1234,col4_val1,NaN), 
-//      (5,"",null,col4_val1,55))
+
+df.select(types.map{case (c, t) => col(c).cast(t)}: _*)
 
 
-val dataFrame = data.toDF("colName1", "colName2", "colName3", "colName4", "colName5")
-// ERROR - Because now our sequence object contains Null and NaN
+___________________________________________________________________________________
+
+
+
+result_df.select((result_df_colNames zip result_df_colTypes).map{(column_name, column_type) => col(column_name).cast(column_type)}: _*).printSchema
+// Not working
+
+
+
+scala> (result_df_colNames zip result_df_colTypes).toSeq.map{case (k,v) => k}
+res65: Seq[String] = List(column_names, count_null, count_nan, count_empty string, count_single_space)
+
+result_df.select((result_df_colNames zip result_df_colTypes).toSeq.map{case (column_name, column_type) => col(column_name).cast(column_type)}: _*).printSchema
+
+
+
+
+____________________________________________________________________________________
+
+
+import shapeless._
+import syntax.std.tuple._
+
+
+
+// Isn't working!
+def arrayToTuple(array: Array[Int]) = {
+    var my_tuple = ()
+    for( ele <- array) {
+    my_tuple = my tuple :+ (ele)
+    }
+    my_tuple
+)
+
+
+______________________________________
+
+
+
+
+
+scala> Seq((0,0,0), (1,1,1))
+res27: Seq[(Int, Int, Int)] = List((0,0,0), (1,1,1))
+
+scala> Seq(Array(0,0,0), Array(1,1,1)).toDF.show()
+
+ 
+
+scala> Seq(Array(Array(0,0,0), Array(1,1,1))).toDF.show()
+<console>:29: error: value toDF is not a member of Seq[Array[Array[Int]]]
+Seq(Array(Array(®,@,0), Array(1,1,1))).toDF.show()
+
+
+________________________
+
+scala> (1,2,3) :+ (6)
+res9: (Int, Int, Int, Int) = (1,2,3,6)
 
 
 
