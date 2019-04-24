@@ -31,6 +31,34 @@ def count_single_space(dataFrame: DataFrame, col:String): String = {
 val func_count_single_space: (DataFrame, String) => String = count_single_space
 
 
+def null_fraction(dataFrame: DataFrame, col:String): String = {
+    "%3f".format(dataFrame.select(col).filter(dataFrame(col).isNull).count.toDouble/dataFrame.count()).toString
+}
+val func_null_fraction: (DataFrame, String) => String = null_fraction
+
+
+def nan_fraction(dataFrame: DataFrame, col:String): String = {
+    "%3f".format(dataFrame.select(col).filter(dataFrame(col).isNaN).count.toDouble/dataFrame.count()).toString
+}
+val func_nan_fraction: (DataFrame, String) => String = nan_fraction 
+
+
+def empty_string_fraction(dataFrame: DataFrame, col:String): String = {
+    "%3f".format(dataFrame.select(col).filter(dataFrame(col) === "").count.toDouble/dataFrame.count()).toString
+}
+val func_empty_string_fraction: (DataFrame, String) => String = empty_string_fraction
+
+
+def single_space_fraction(dataFrame: DataFrame, col:String): String = {
+    "%3f".format(dataFrame.select(col).filter(dataFrame(col) === " ").count.toDouble/dataFrame.count()).toString
+}
+val func_single_space_fraction: (DataFrame, String) => String = single_space_fraction
+
+
+def distinct_count(dataFrame: DataFrame, col:String): String = {
+    dataFrame.select(col).distinct.count.toString
+}
+val func_distinct_count: (DataFrame, String) => String = distinct_count
 
 
 _____________________________________________________________________________________________________________________________________________________
@@ -66,7 +94,15 @@ val function1 = (func_count_null, "count_null", "bigint")
 val function2 = (func_count_nan, "count_nan", "bigint")
 val function3 = (func_count_empty_string, "count_empty_string", "bigint")
 val function4 = (func_count_single_space, "count_single_space", "bigint")
-val functionArray = Array(function1, function2, function3, function4)
+
+val function5 = (func_null_fraction, "null_fraction", "double")
+val function6 = (func_nan_fraction, "nan_fraction", "double")
+val function7 = (func_empty_string_fraction, "empty_string_fraction", "double")
+val function8 = (func_single_space_fraction, "single_space_fraction", "double")
+
+val function9 = (func_distinct_count, "distinct_count", "bigint")
+
+val functionArray = Array(function1, function2, function3, function4, function5, function6, function7, function8, function9)
 
 val columnList = dataFrame.columns.filter(!_.contains("<column_to_exclude>"))
 
