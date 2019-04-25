@@ -1,7 +1,7 @@
 
 def extractStringColName(dataFrame: DataFrame, colType: Any): Array[String] = {
     val df_struct_field = dataFrame.schema.fields
-    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) filter (x => x._2 == colType) map ( x => x._1)
+    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) ) filter (x => x._2 == colType) map ( x => x._1)
 }
 
 
@@ -36,13 +36,13 @@ Array[org.apache.spark.sql.types.StructField]
 
 def extractStringColName(dataFrame: DataFrame): Array[String] = {
     val df_struct_field = dataFrame.schema.fields
-    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) filter (x => x._2 == org.apache.spark.sql.types.StringType) map ( x => x._1)
+    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) ) filter (x => x._2 == org.apache.spark.sql.types.StringType) map ( x => x._1)
 }
 
 
 def extractStringColName(dateframe: DataFrame, colType: org.apache.spark.sql.types.StringType): Array[String] = {
     val df_struct_field = dataFrame.schema.fields
-    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) filter (x => x._2 == colType) map ( x => x._1)
+    dataFrame.columns.map(col_name => (col_name, df_struct_field.filter(x => x.name == col_name)(0).dataType) )filter (x => x._2 == colType) map ( x => x._1)
 }
 // Works. So we can pass column type also in the function as a parameter
 
