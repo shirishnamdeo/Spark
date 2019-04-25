@@ -7,8 +7,8 @@ def extractStringColName(dataFrame: DataFrame, colType: Any): Array[String] = {
 
 
 val timestampTypeCols = extractStringColName(dataFrame3, TimestampType)
-val stringTypeCols    = extractStringColName(dateFrame3, StringType)
-val shortTypeCols     = extractStringColName(dateFrame3, ShortType)
+val stringTypeCols    = extractStringColName(dataFrame3, StringType)
+val shortTypeCols     = extractStringColName(dataFrame3, ShortType)
 val integerTypeCols   = extractStringColName(dataFrame3, IntegerType)
 val longTypeCols      = extractStringColName(dataFrame3, LongType)
 val decimalTypeCols   = extractStringColName(dataFrame3, DecimalType(26,3))
