@@ -21,3 +21,11 @@ DataFrame.select($"<column_name>").filter(DataFrame("<column_name>") === "").cou
 DataFrame.filter(DataFrame("<column_name>").isNull || DataFrame("<column_name>").isNaN || DataFrame("<column_name>") === "" ).count()
 
 
+
+DataFrame.filter(col("column_name").isNull))
+DataFrame.filter(col("column_name").isNaN))
+DataFrame.filter(col("column_name").isNotNull))
+
+
+
+

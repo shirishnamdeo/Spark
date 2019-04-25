@@ -9,6 +9,9 @@ https://stackoverflow.com/questions/33376571/replace-null-values-in-spark-datafr
 
 
 
+isNaN doesn't work on the TimestampType column I believe, atleast not  on ingestion_ts column
+
+
 
 val sequenceObject3 = Seq(
     Row(1, "col1_val1", "col2_val1", "col3_val1"),
@@ -79,6 +82,9 @@ DataFrame.where(DataFrame("<column_name>").isNotNull)
 
 DataFrame.filter($"<column_name>".isNull)
 DataFrame.filter("<column_name> is null")
+
+// To filter our the records which have Null values in <column_name>
+DataFrame.filter(col("<column_name>").isNotNull)
 
 
 DataFrame.filter(col("<column_name1>").isNotNull && col("<column_name2>").isNotNull)
