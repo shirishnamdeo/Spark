@@ -110,7 +110,22 @@ scala> dataDF.show()
 
 
 
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.Vectors
 
+val training1 = spark.createDataFrame(Seq(
+  (1.0, Vectors.dense(3.0)),
+  (0.0, Vectors.dense(3.0))) 
+).toDF("label", "features")
+
+
+scala> training1.show()
++-----+--------+
+|label|features|
++-----+--------+
+|  1.0|   [3.0]|
+|  0.0|   [3.0]|
++-----+--------+
 
 
 
