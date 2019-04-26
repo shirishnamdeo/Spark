@@ -20,6 +20,27 @@ scala> sales.agg(count("id"), sum("vl")).collect().foreach(println(_))
 
 
 
+
+DataFrame.groupBy("<column_name>").agg("<column_name>")
+DataFrame.groupBy("<column_name>").agg(count("<column_name>"))
+
+
+--Alising the Column Name
+DataFrame.groupBy("<column_name>").agg(count("<column_name>") as "new_column_name")
+DataFrame.groupBy("<column_name>").agg(count("<column_name>").as("new_column_name"))
+
+DataFrame.select($"<column_name>".as[String])
+DataFrame.select($"<column_name>".as("new_column_name"))
+DataFrame.select($"<column_name>".alias("new_column_name"))
+DataFrame.select($"<column_name>".alias("new_column_name").as[String])
+
+
+DataFrame.groupBy("<column_name>").agg(max("<column_name>"))
+-- In above query, there is only one column in groupBy clause, and we are taking the max of that group, thus only one element would be in each group
+
+
+
+
 _____________________________________________________________________________________________________________________________________________________
 
 def aggregate( an initial value)(an intra-partition sequence operation)(an inter-partition combination operation)

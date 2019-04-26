@@ -1,3 +1,5 @@
+import org.apache.spark.sql.types._
+
 
 def extractStringColName(dataFrame: DataFrame, colType: Any): Array[String] = {
     val df_struct_field = dataFrame.schema.fields

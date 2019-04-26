@@ -1,0 +1,166 @@
+Importing Libraries
+
+
+import spark.implicits._
+import org.apache. spark.sql.types._
+
+import org. apache.spark.storage.StorageLevel
+import org. apache.spark.storage.StorageLevel._
+
+import org. apache.spark.sql.DataFrame
+
+import org.apache.spark.ml.feature.StringIndexer
+import org. apache.spark.ml.feature.OneHotEncoder
+import org.apache.spark.ml.feature.VectorAssembler
+
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.PipelineModel
+
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+
+val dataFrame = spark.sql("SELECT * FROM <db_name_space>.<table_name>")
+
+val dataFrame2 = dataFrame.filter(col("<column_name>").isNotNull)
+
+val dataFrame3 = dataFrame2.withColumn("<concatenate_column>", concat($"column_name", lit("<stringToAppend>"), $"vat_treatment")).drop("column_name1", "column_name2")
+    
+
+
+val timestampTypeCols 	= extractStringColName(dataFreme3, TimestampType)
+val stringTypeCols 		= extractStringColName(dataFrame3, StringType)
+val shortTypeCols 		= extrractStringColName(dataFrame3, ShortType)
+val integerTypeCols 	= extractStringColName(dataFrame3, IntegerType)
+val decimalTypeCols 	= extractStringColName(dataFrame3, DecimalType(26,3))
+val longTypeCols 		= extractStringColName(dataFrame3, LongType)
+val decimalTypeCols2 	= extractStringColName(dataFrame3, DecimalType(7,4))
+
+ 
+
+val dataFrameStringType = dataFrame3.select(stringTypeCols.head, stringTypeCols.tail: _*)
+
+val function9 = (func_distinct_count, "distinct_count", "bigint")
+val strColDistinctCount = genericFunction(dataFrameStringType, Array(function9), dataFrameStringType. columns)
+
+// Extracting StringType Columns with distinct_count < 20
+val strColCountFilter20 = strColDistinctCount.filter($"distinct_count" < 20).select($"column_names").rdd.map(r => r(0).asInstanceOF[String]).collect()
+
+ 
+
+val encodedFeatures = strColCountFilter20.filter(!_.contains("vat_rgstrn_country")).flatMap({ name =>
+	val stringIndexer = new StringIndexer().setInputCol(name).setOutputCol(name + "_Index")
+	val oneHotEncoder = new OneHotEncoder().setInputCol(name + "_Index").setOutputCol(name + "_vec").setDroplast(false)
+	
+	Array(stringIndexer, oneHotEncoder)
+})
+
+
+
+val pipeline = new Pipeline().setStages(encodedFeatures)
+val indexer_model = pipeline. fit(dataFrame3)
+val dataFramed = indexer_model.transform(dateFrame3)
+
+val vecFeatures = dataFrame4.columns.filter(_.contains("vec")).toArray
+
+val vectorAssembler = new VectorAssembler().setInputCols(vecFeatures).setOutputCol("stringColFeatures")
+val pipelineVectorAssembler = new Pipeline().setStages(Array(vectorAssembler))
+
+val dataFrameS = pipelineVectorAssembler. fit(dataFrame4).transform(dateFramed)
+
+val nonStringCols = dataFrameS.columns.diff(stringTypeCols)
+val dataFramellumType = dataFrameS.select(nonStringCols.map(col): _*).drop("timestamtTypeCol")
+
+
+val vectorAssembler2 = new VectorAssembler().setInputCols(dataFrameNumType. columns).setOutputCol("numericColFeatures")
+
+val pipelineVectorAssembler2 = new Pipeline().setStages(Array(vectorAssembler2))
+
+val dataFrame6 = pipelineVectorAssembler2. fit (dataFrame5).transform(dataFrame5)
+
+val vectorAssembler3 = new VectorAssembler().setInputCols(Array("numericColFeatures", "stringColFeatures")).setOutputCol("final_features")
+
+val pipelineVectorAssembler3 = new Pipeline().setStages(Array(vectorAssembler3))
+
+val dataFrame7 = pipelineVectorAssembler3.fit(dataFrame6).transform(dataFrame6)
+
+
+// Converting lable index (Catgorical) from categorical to index
+val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("label_Indexed"). fit
+(dataFrame7)
+
+val dataFrame8 = labelIndexer.transform(dataFrame7)
+import org.apache.spark.ml.classification.DecisionTreeClassifier
+
+val dtreeClassifier = new DecisionTreeClassifier().setLabelCol("label_Indexed").setFeaturesCol("final_features")
+
+ 
+
+val model = dtreeClassifier.fit(dataFrame8)
+// .fit() method -> Training/Learning,
+// .transform() method -> Predictions
+
+
+import org. apache. spark.ml.classification.DecisionTreeClassificationModel
+
+val treeModel = model.stages(2).asInstanceOf[DecisionTreeClassificationModel]
+printIn(s"Learned classification tree model:\n ${treeModel.toDebugString}")
+
+
+_____________________________________________________________________________________________________________________________________________________
+
+model.depth
+model.extractParamMap
+
+
+model.rootNode
+
+
+import org.apache.spark.ml.tree.InternalNode
+
+
+
+
+model.getImpurity
+model.numNodes
+
+print(model.explainParams)
+
+model.featureImportances
+model.featureImportances.size
+
+
+https://stackoverflow.com/questions/27288861/finding-importance-value-from-sparks-decision-tree-using-mllib
+
+featureArray.zip(featureImportances.toArray).sortBy(_._2).reverse
+
+
+
+labelIndexer.labels
+
+
+
+val root_noede = model.rootNode.asInstanceOf[Node]
+val root_noede = model.rootNode.asInstanceOf[InternalNode]
+
+
+import org.apache.spark.mllib.tree.model.{Node => OldNode}
+
+https://stackoverflow.com/questions/51614077/how-to-print-the-decision-path-rules-used-to-predict-sample-of-a-specific-row
+
+
+import org.apache.spark.ml.tree.{Node, InternalNode, LeafNode, Split, CategoricalSplit, ContinuousSplit}
+
+
+val inode = model.rootNode.asInstanceOf[InternalNode]
+
+inode.split.isInstanceOf[-]
+
+https://www.spotx.tv/resources/blog/developer-blog/exploring-random-forest-internal-knowledge-and-converting-the-model-to-table-form/
+
+
+
+Sorurce code for param of InternalNode
+
+Sorurce code for params for Split 
