@@ -3,6 +3,7 @@
 DataFrame.filter($"<column_name>" > value)
 DataFrame.filter($"<column_name>" >= value)
 DataFrame.filter($"<column_name>" === value)
+DataFrame.filter($"<column_name>" =!= value)
 
 
 

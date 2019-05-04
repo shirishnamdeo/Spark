@@ -61,6 +61,38 @@ def distinct_count(dataFrame: DataFrame, col:String): String = {
 val func_distinct_count: (DataFrame, String) => String = distinct_count
 
 
+def mean_value(dataFrame: DataFrame, col_name:String): String = {
+    "%.4f".format(dataFrame.select(mean(col(col_name))).collect()(0)(0)).toString
+}
+val func_mean_value: (DataFrame, String) => String = mean_value
+
+
+def std_value(dataFrame: DataFrame, col_name:String): String = {
+    "%.4f".format(dataFrame.select(stddev(col(col_name))).collect()(0)(0)).toString
+}
+val func_std_value: (DataFrame, String) => String = std_value
+
+
+def max_value(dataFrame: DataFrame, col_name:String): String = {
+    "%.4f".format(dataFrame.select(max(col(col_name))).collect()(0)(0).toString.toDouble).toString
+}
+val func_max_value: (DataFrame, String) => String = max_value
+// In above methods defination, .toString.toDouble is kept there because for some columns data types it would be a double while for some other column_name
+// column type it would be INT. So keeping a coherent type for every outcome.
+
+def min_value(dataFrame: DataFrame, col_name:String): String = {
+    "%.4f".format(dataFrame.select(min(col(col_name))).collect()(0)(0).toString.toDouble).toString
+}
+val func_min_value: (DataFrame, String) => String = min_value
+
+
+def sum_value(dataFrame: DataFrame, col_name:String): String = {
+    "%.4f".format(dataFrame.select(sum(col(col_name))).collect()(0)(0).toString.toDouble).toString
+}
+val func_sum_value: (DataFrame, String) => String = sum_value
+
+
+
 _____________________________________________________________________________________________________________________________________________________
 
 
@@ -90,21 +122,25 @@ ________________________________________________________________________________
 
 
 
-val function1 = (func_count_null, "count_null", "bigint")
-val function2 = (func_count_nan, "count_nan", "bigint")
-val function3 = (func_count_empty_string, "count_empty_string", "bigint")
-val function4 = (func_count_single_space, "count_single_space", "bigint")
-
-val function5 = (func_null_fraction, "null_fraction", "double")
-val function6 = (func_nan_fraction, "nan_fraction", "double")
-val function7 = (func_empty_string_fraction, "empty_string_fraction", "double")
-val function8 = (func_single_space_fraction, "single_space_fraction", "double")
-
-val function9 = (func_distinct_count, "distinct_count", "bigint")
+val function1 = (func_count_null,           "count_null",       "bigint")
+val function2 = (func_count_nan,            "count_nan",        "bigint")
+val function3 = (func_count_empty_string,   "count_empty_string", "bigint")
+val function4 = (func_count_single_space,   "count_single_space", "bigint")
+val function5 = (func_null_fraction,        "null_fraction",    "double")
+val function6 = (func_nan_fraction,         "nan_fraction",     "double")
+val function7 = (func_empty_string_fraction,"empty_string_fraction", "double")
+val function8 = (func_single_space_fraction,"single_space_fraction", "double")
+val function9 = (func_distinct_count,       "distinct_count",   "bigint")
+val function10 = (func_mean_value,          "mean_value",       "double")
+val function11 = (func_std_value,           "std_value`",       "double")
+val function12 = (func_max_value,           "max_value",        "double")
+val function13 = (func_min_value,           "min_value",        "double")
+val function13 = (func_sum_value,           "sum_value",        "double")
 
 val functionArray = Array(function1, function2, function3, function4, function5, function6, function7, function8, function9)
 
 val columnList = dataFrame.columns.filter(!_.contains("<column_to_exclude>"))
+
 
 
 

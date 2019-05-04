@@ -2,8 +2,8 @@
 
 
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 import org.apache.spark.ml.classification.DecisionTreeClassifier
+import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
 
@@ -60,4 +60,7 @@ val Array(trainingData, testData) = data.randomSplit(Array(0.7, 0.3))
 val dt = new DecisionTreeClassifier()
   .setLabelCol("indexedLabel")  -- The target column name, explicitly specigied, default "label"
   .setFeaturesCol("indexedFeatures")  -- You can explicitly set the name of input features name, default "features"
+
+
+
 
