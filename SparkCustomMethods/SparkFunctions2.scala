@@ -135,7 +135,7 @@ val function10 = (func_mean_value,          "mean_value",       "double")
 val function11 = (func_std_value,           "std_value`",       "double")
 val function12 = (func_max_value,           "max_value",        "double")
 val function13 = (func_min_value,           "min_value",        "double")
-val function13 = (func_sum_value,           "sum_value",        "double")
+val function14 = (func_sum_value,           "sum_value",        "double")
 
 val functionArray = Array(function1, function2, function3, function4, function5, function6, function7, function8, function9)
 
