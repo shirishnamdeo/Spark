@@ -31,6 +31,7 @@ Spark is designed to cover a wide range of workloads such as batch applications,
 
 
 
+
 Apache Spark has following features.
 
 Speed − Spark helps to run an application in Hadoop cluster, up to 100 times faster in memory, and 10 times faster when running on disk. This is possible by reducing number of read/write operations to disk. It stores the intermediate processing data in memory.
