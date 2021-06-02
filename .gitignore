@@ -5,6 +5,6 @@ References
 .log
 
 # Ignoring Spark-Maven-Project data
-.idea
-project/target
-target
+SparkProjects/**/.idea
+SparkProjects/**/project/target
+SparkProjects/**/target
