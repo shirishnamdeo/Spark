@@ -1,0 +1,21 @@
+sc.textFile("file:///etc/gpm-root.conf").count()  --Working
+
+sc.textFile("file:/etc/opt/cs/oracle/network/admin/README").count()    --Working
+sc.textFile("file:///etc/opt/cs/oracle/network/admin/README").count()  --Working
+
+
+-- Needs to run in local mode
+spark2-shell --master=local
+sc.textFile("file:///cs/pcmluat1/tmphuge_files.txt").count() -- Working
+sc.textFile("file:///cs/gbtaxuat/UATrefresh.sh").count()     -- Working
+sc.textFile("file:///home/m215345/dhref_oe_hierarchy_10.txt").count()  -- Working
+sc.textFile("hdfs:///apps/gbtaxuat/testdir/test.txt").count()  --Working
+
+
+
+Suresh:
+NO way it will work in cluster mode, because the driver is some other node on the cluster.
+Would work in local and client mode only as the client is the same server you are on currently.
+
+
+

@@ -1,0 +1,3 @@
+PySpark does not have DataSets.
+
+PySpark is lazy, that is compute doesnot happen until output is requested.

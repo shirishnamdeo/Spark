@@ -1,0 +1,5 @@
+// From spark shell
+scala> :load /cs/bdl/cfodltax/eur/ukvat/model/SparkShell/load_file.scala
+
+// While initializing spark-shell
+spark-shell -i file.scala

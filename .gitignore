@@ -1,4 +1,10 @@
-metastore_db
-Datasets
-SparkScreenshots
-IntellijSparkProjects
+# Ignoring specific directories
+References
+
+# Ignoring specific file-types
+.log
+
+# Ignoring Spark-Maven-Project data
+.idea
+project/target
+target
