@@ -11,10 +11,10 @@ spark2-shell --conf spark.ui.port=<port-number>
 sc = SparkContext(master="local", appName="first app")
 
 
-sc.textFile("hdfs:///apps/gbtaxuat/testdir/filename.txt")
+sc.textFile("hdfs:///apps/<database>/testdir/filename.txt")
 # This is working
 
-sc.textFile("file:///cs/gbtaxuat/filename.txt")
+sc.textFile("file:///cs/<database>/filename.txt")
 # Isn't working
 
 
