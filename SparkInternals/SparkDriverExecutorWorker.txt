@@ -1,1 +1,12 @@
 https://www.projectpro.io/article/apache-spark-architecture-explained-in-detail/338
+
+https://www.projectpro.io/projects
+
+https://www.informit.com/articles/article.aspx?p=2928186
+
+Spark Dirver:
+
+
+SparkMaster vs SparkDriver:
+https://www.informit.com/articles/article.aspx?p=2928186
+It is important to distinguish the runtime functions of the Driver and the Master. The name Master may be inferred to mean that this process is governing the execution of the application—but this is not the case. The Master simply requests resources and makes those resources available to the Driver. Although the Master monitors the status and health of these resources, it is not involved in the execution of the application and the coordination of its tasks and stages. That is the job of the Driver.
